@@ -13,3 +13,5 @@ exclude =
     dist,
     config,
     venv
+per-file-ignores =
+    tests/*:F841
