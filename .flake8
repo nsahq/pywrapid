@@ -1,0 +1,15 @@
+[flake8]
+filename = *.py
+max-line-length = 99
+ignore = E203, E501, W503
+max-complexity = 11
+select = B,C,E,F,W,T4
+exclude =
+    .git,
+    __pycache__,
+    docs/source/conf.py,
+    old,
+    build,
+    dist,
+    config,
+    venv
