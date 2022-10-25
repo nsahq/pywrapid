@@ -250,14 +250,14 @@ class WebClient:
         )
 
         if response.status_code > 299 or response.status_code < 200:
-            log.debug(
-                "Failed login: [%s] %s @ %s",
+            log.error(
+                "Unable to generate new session: [%s] %s @ %s",
                 response.status_code,
                 response.content,
                 self._login_url,
             )
             raise ClientAuthenticationError(
-                f"Login attempt failed: [{response.status_code}] {response.content!r}"
+                f"Unable to generate new session: [{response.status_code}] {response.content!r}"
             )
 
         if "Authorization" in response.headers:
@@ -335,3 +335,11 @@ class WebClient:
             raise ClientException from error
 
         return response
+
+    @property
+    def get_config(self) -> dict:
+        """Get current configuration
+
+        Returns:
+            configuration {dict}  -- Dict representation of configuration"""
+        return self._config
