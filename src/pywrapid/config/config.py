@@ -22,13 +22,14 @@ import os
 from typing import Type
 
 import yaml
-from config.exception import (
+
+from pywrapid.config.exception import (
     ConfigurationError,
     ConfigurationFileNotFoundError,
     ConfigurationValidationError,
 )
-from utils.dict_tools import dict_keys_exist
-from utils.file_tools import is_file_readable
+from pywrapid.utils.dict_tools import dict_keys_exist
+from pywrapid.utils.file_tools import is_file_readable
 
 log = logging.Logger(__name__)
 

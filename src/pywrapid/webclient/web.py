@@ -26,9 +26,10 @@ from typing import Type
 from urllib.parse import urlparse
 
 import jwt
-from config.config import WrapidConfig
 from requests import HTTPError, RequestException, Response, Timeout, TooManyRedirects, request
-from utils.file_tools import is_file_readable
+
+from pywrapid.config.config import WrapidConfig
+from pywrapid.utils.file_tools import is_file_readable
 
 from .exceptions import (
     ClientAuthenticationError,
@@ -177,8 +178,10 @@ class WebClient:
             self._config = dict_config
 
         self._authorization_type = authorization_type
-        self._credential_options = credentials.options()
-        self._login_url = credentials.login_url()
+
+        if credentials:
+            self._credential_options = credentials.options()
+            self._login_url = credentials.login_url()
         self._authorization_expiry = datetime.now()
         self._access_token = ""  # nosec
 
