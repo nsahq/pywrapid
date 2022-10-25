@@ -12,4 +12,10 @@ from .exceptions import (
     ClientURLError,
     CredentialCertificateFileError,
 )
-from .web import AuthorizationType, BasicAuthCredentials, WebClient, WebCredentials, X509Credentials
+from .web import (
+    AuthorizationType,
+    BasicAuthCredentials,
+    WebClient,
+    WebCredentials,
+    X509Credentials,
+)
