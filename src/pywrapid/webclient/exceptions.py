@@ -31,7 +31,7 @@ class ClientAuthenticationError(ClientException):
     """Client Authorization Error Exception"""
 
 
-class TokenRefreshError(ClientException):
+class ClientTokenRefreshError(ClientException):
     """Token Refresh Error Exception"""
 
 
