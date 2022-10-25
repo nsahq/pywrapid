@@ -72,19 +72,19 @@ class WrapidConfig:
     def is_file_usable(self, path: str) -> bool:
         """Check if file is present, accessible and readable
 
-        Arguments:
-            path {str} -- Path to configuration file.)
+        Args:
+            path (str): Path to configuration file.
 
         Returns:
-            True/False {bool} -- True if validation passes, otherwise False."""
+            bool: Indicating validation success.
+        """
         log.debug("Validating if path %s is an accessible file", path)
         return is_file_readable(path)
 
     def application_config_location(
         self, application_name: str, file_type: str = "yml", locations: list = None
     ) -> str:
-        """
-        Discovery to find configuration file for an application on Windows/Linux/Mac
+        """Discovery to find configuration file for an application on Windows/Linux/Mac
 
         Uses a set list of default/common configration locations
 
@@ -105,14 +105,18 @@ class WrapidConfig:
         12. Configuration location:     /etc/application_name/config"
         13. Configuration location:     /etc/defaults/application_name"
 
-        Parameters:
-        application_name {str}  -- The name of the application
-        file_type {str}         -- The type of config file to find
-        locations {list}        -- List of paths to look in before discovery
+        Args:
+            application_name (str): The name of the application
+            file_type (str, optional): The type of config file to find.
+            locations (list, optional): List of paths to look in before discovery.
+
+        Raises:
+            ConfigurationFileNotFoundError
 
         Returns:
-        location {str}          -- Absolute path of the configuration file
+            str: Absolute path of the configuration file
         """
+
         config_file_name = f"{application_name}.{file_type}"
 
         if not locations:
@@ -162,13 +166,7 @@ class WrapidConfig:
 
 
 class ApplicationConfig(WrapidConfig):
-    """Configuration class
-
-    Loads configuration from YAML file and returns it as a configuration object
-
-    Attributes:
-        config_path {str}   -- path to the configuration file
-        cfg {dict}          -- The configuration content in dict format"""
+    """Application Configuration Class"""
 
     def __init__(
         self,
@@ -178,6 +176,7 @@ class ApplicationConfig(WrapidConfig):
         allow_config_discovery: bool = False,
     ) -> None:
         """Init of ApplicationConfig
+        Loads configuration from file
 
         Args:
             application_name (str, optional): Name of application.
@@ -207,24 +206,27 @@ class ApplicationConfig(WrapidConfig):
     def yaml_config_to_dict(
         self, config: str = "", expected_keys: list = None, allow_empty: bool = False
     ) -> dict:
-        """
-        Extract configuration data from a yaml file.
+        """Extract configuration data from a yaml file
 
         Allows validation of key presence and value precence before returning
         the data set as a dict.
 
-        Exceptions:
-            ConfigurationFileNotFoundError -- File is not present or inaccessible
-            ValueError              -- Value in configuration file did not pass validation
-            ConfigurationError      -- All other errors
+        Args:
+            config (str, optional): Absolute or relative file path.
+            expected_keys (list, optional): Keys which must exist in the data set.
+            allow_empty (bool, optional): Allow keys with empty values.
 
-        Keyword Arguments:
-            config {str}            -- Absolute or relative file path
-            expected_keys {list}    -- Keys which must exist in the data set
-            allow_empty {bool}      -- Allow keys with empty values
+        Raises:
+            ConfigurationFileNotFoundError: _description_
+            ConfigurationError: _description_
+
+        Raises:
+            ConfigurationFileNotFoundError: File is not present or inaccessible
+            ValueError: Value in configuration file did not pass validation
+            ConfigurationError: All other errors
 
         Returns:
-            cfg {dict}              -- Configuration settings
+            dict: Configuration settings
         """
         if not is_file_readable(config):
             raise ConfigurationFileNotFoundError
@@ -243,8 +245,8 @@ class ApplicationConfig(WrapidConfig):
 
         except FileNotFoundError:
             ConfigurationFileNotFoundError(f"Configuration file not found: {config}")
-        except ValueError:
-            raise
+        except ValueError as error:
+            raise ConfigurationError(f"Configuration value error for {config}: {error}") from error
         except Exception as error:
             raise ConfigurationError(f"File error for {config}: {error}") from error
 
@@ -252,18 +254,23 @@ class ApplicationConfig(WrapidConfig):
 
 
 class ConfigSubSection(WrapidConfig):
-    """Configuration subsection class
+    """Configuration Subsection Class
 
-    Sectioned configuration data from Conf object
-
-    Attributes:
-        config_path {str}   -- path to the configuration file
-        cfg {dict}          -- The configuration content in dict format"""
-
+    Sectioned configuration data from WrapidConfig object
+    """
     def __init__(self, conf: Type[WrapidConfig], subsection: str = ""):
+        """Init method of ConfigSubSection
+
+        Args:
+            conf (Type[WrapidConfig]): Derived object of WrapidConfig class
+            subsection (str, optional): Key to extract configration from.
+
+        Raises:
+            ConfigurationError
+        """
         if subsection == "":
-            raise ValueError("No configuration subsection specified")
+            raise ConfigurationError("No configuration subsection specified")
         if subsection not in conf.cfg:
-            raise ValueError(f"Missing configuration section: {subsection}")
+            raise ConfigurationError(f"Missing configuration section: {subsection}")
         self._subsection_key = subsection
         self.cfg = conf.cfg[subsection].copy()
