@@ -22,7 +22,7 @@ import logging
 from datetime import datetime, timedelta
 from enum import Enum
 from time import time
-from typing import Type
+from typing import Any, Type
 from urllib.parse import urlparse
 
 import jwt
@@ -39,6 +39,7 @@ from .exceptions import (
     ClientTimeout,
     ClientURLError,
     CredentialCertificateFileError,
+    CredentialKeyFileError,
 )
 
 log = logging.Logger(__name__)
@@ -116,7 +117,7 @@ class X509Credentials(WebCredentials):
         if not is_file_readable(cert_file):
             raise CredentialCertificateFileError("Certificate file error")
         if not is_file_readable(key_file):
-            raise CredentialCertificateFileError("Key file error")
+            raise CredentialKeyFileError("Key file error")
 
         self._options = {"cert": (cert_file, key_file)}
 
@@ -180,8 +181,8 @@ class WebClient:
         self._authorization_type = authorization_type
 
         if credentials:
-            self._credential_options = credentials.options()
-            self._login_url = credentials.login_url()
+            self._credential_options = credentials.options()  # type: ignore
+            self._login_url = credentials.login_url()  # type: ignore
         self._authorization_expiry = datetime.now()
         self._access_token = ""  # nosec
 
@@ -256,12 +257,8 @@ class WebClient:
                             unix_now + jwt_data[exp]
                         )
                     else:
-                        self._authorization_expiry = datetime.fromtimestamp(
-                            jwt_data[exp]
-                        )
-            log.debug(
-                "Authorization expiry time set to: %s", self._authorization_expiry
-            )
+                        self._authorization_expiry = datetime.fromtimestamp(jwt_data[exp])
+            log.debug("Authorization expiry time set to: %s", self._authorization_expiry)
 
     def call(
         self,
@@ -269,7 +266,7 @@ class WebClient:
         url: str,
         raise_for_status: bool = False,
         skip_authentication: bool = False,
-        **options,
+        **options: Any,
     ) -> Response:
         """Send web request to the target url
 
@@ -291,9 +288,7 @@ class WebClient:
             Response: requests.Response object
         """
         # Handle authentication and token refresh
-        time_offset = datetime.now() + timedelta(
-            seconds=1
-        )  # Offset to avoid ms/ns race condition
+        time_offset = datetime.now() + timedelta(seconds=1)  # Offset to avoid ms/ns race condition
         if (
             self._login_url and not self._access_token
         ) or self._authorization_expiry < time_offset:
@@ -303,10 +298,7 @@ class WebClient:
         if "cert" not in options and "auth" not in options:
             options = {**options, **self._credential_options}
 
-        if (
-            "Authorization" not in options
-            and self._authorization_type != AuthorizationType.NONE
-        ):
+        if "Authorization" not in options and self._authorization_type != AuthorizationType.NONE:
             options["header"]["Authorization"] = self._access_token
 
         try:
