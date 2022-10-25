@@ -11,11 +11,8 @@ from .exceptions import (
     ClientTimeout,
     ClientURLError,
     CredentialCertificateFileError,
+    CredentialError,
+    CredentialKeyFileError,
+    CredentialURLError,
 )
-from .web import (
-    AuthorizationType,
-    BasicAuthCredentials,
-    WebClient,
-    WebCredentials,
-    X509Credentials,
-)
+from .web import AuthorizationType, BasicAuthCredentials, WebClient, WebCredentials, X509Credentials
