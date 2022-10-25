@@ -52,9 +52,17 @@ class ClientURLError(ClientException):
 
 
 # Credentials
-class CredentialCertificateFileError(ClientException):
+class CredentialError(Exception):
     """Credential Certificate Error Exception"""
 
 
-class CredentialKeyFileError(ClientException):
+class CredentialCertificateFileError(CredentialError):
+    """Credential Certificate Error Exception"""
+
+
+class CredentialKeyFileError(CredentialError):
     """Credential Key Error Exception"""
+
+
+class CredentialURLError(CredentialError):
+    """Credential URL Error Exception"""
