@@ -223,8 +223,8 @@ class WebClient:
         self._authorization_type = authorization_type
 
         if credentials:
-            self._credential_options = credentials.options()  # type: ignore
-            self._login_url = credentials.login_url()  # type: ignore
+            self._credential_options = credentials.options  # type: ignore
+            self._login_url = credentials.login_url  # type: ignore
         self._authorization_expiry = datetime.now()
         self._access_token = ""  # nosec
 
