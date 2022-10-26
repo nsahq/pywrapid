@@ -267,10 +267,7 @@ class WebClient:
         """
 
         response = self.call(
-            method=method,
-            url=self._login_url,
-            raise_for_status=True,
-            skip_authentication=True,
+            method, self._login_url, raise_for_status=False, skip_authentication=True
         )
 
         if response.status_code > 299 or response.status_code < 200:
