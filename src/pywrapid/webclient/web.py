@@ -337,8 +337,13 @@ class WebClient:
         if "cert" not in options and "auth" not in options:
             options = {**options, **self._credential_options}
 
-        if "Authorization" not in options and self._authorization_type != AuthorizationType.NONE:
-            options["header"] = {"Authorization": self._access_token}
+        if "headers" not in options:
+            options["headers"] = {"Authorization": self._access_token}
+        elif (
+            "Authorization" not in options["headers"]
+            and self._authorization_type != AuthorizationType.NONE
+        ):
+            options["headers"] = {"Authorization": self._access_token}
 
         try:
             response = request(method, url, **options)
