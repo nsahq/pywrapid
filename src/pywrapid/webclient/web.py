@@ -338,7 +338,7 @@ class WebClient:
             options = {**options, **self._credential_options}
 
         if "Authorization" not in options and self._authorization_type != AuthorizationType.NONE:
-            options["header"]["Authorization"] = self._access_token
+            options["header"] = {"Authorization": self._access_token}
 
         try:
             response = request(method, url, **options)
