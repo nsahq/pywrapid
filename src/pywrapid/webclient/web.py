@@ -94,7 +94,7 @@ class WebCredentials:
     @property
     def options(self) -> dict:
         """Getter for options"""
-        return dict(self._options)
+        return self._options
 
     @property
     def login_url(self) -> str:
@@ -105,9 +105,17 @@ class WebCredentials:
 class BasicAuthCredentials(WebCredentials):
     """Credential class for basic auth"""
 
-    def __init__(self, username: str, password: str, login_url: str = "", wrapid_config: Type[WrapidConfig] = None) -> None:
+    def __init__(
+        self,
+        username: str,
+        password: str,
+        login_url: str = "",
+        wrapid_config: Type[WrapidConfig] = None,
+    ) -> None:
         if wrapid_config and (login_url):
-            raise CredentialError("Multiple configuration options used, use either a WrapidConfig derivative OR pass parameters")
+            raise CredentialError(
+                "Multiple configuration options used, use a WrapidConfig object OR pass parameters"
+            )
 
         if wrapid_config:
             login_url = wrapid_config.cfg.get("login_url", "")
@@ -118,23 +126,39 @@ class BasicAuthCredentials(WebCredentials):
 
 
 class X509Credentials(WebCredentials):
-    """Credential class for basic auth"""
+    """Credential class for x509 auth"""
 
-    def __init__(self, cert_file: str = "", key_file: str = "", login_url: str = "", wrapid_config: Type[WrapidConfig] = None) -> None:
+    def __init__(
+        self,
+        cert_file: str = "",
+        key_file: str = "",
+        login_url: str = "",
+        wrapid_config: Type[WrapidConfig] = None,
+    ) -> None:
 
         if wrapid_config and (cert_file or key_file or login_url):
-            raise CredentialError("Multiple configuration options used, use either a WrapidConfig derivative OR pass parameters")
+            raise CredentialError(
+                "Multiple configuration options used, use either a WrapidConfig derivative OR pass parameters"
+            )
 
         if wrapid_config:
             cert_file = wrapid_config.cfg.get("cert_file", "")
             key_file = wrapid_config.cfg.get("key_file", "")
             login_url = wrapid_config.cfg.get("login_url", "")
 
-        super().__init__(login_url=login_url)
+        log.debug(
+            "Loading x509 web credentials: cert_file=%s, key_file=%s, login_url=%s",
+            cert_file,
+            key_file,
+            login_url,
+        )
 
+        super().__init__(login_url=login_url)
         if not is_file_readable(cert_file):
+            log.error("Certificate file validation failed for %s", cert_file)
             raise CredentialCertificateFileError("Certificate file error")
         if not is_file_readable(key_file):
+            log.error("Key file validation failed for %s", key_file)
             raise CredentialKeyFileError("Key file error")
 
         self._options = {"cert": (cert_file, key_file)}
