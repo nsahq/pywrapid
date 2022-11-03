@@ -7,15 +7,15 @@ name = "pywrapid"
 description = "Collection of wrapper libraries for rapid development of python applications"
 readme = "README.rst"
 requires-python = ">=3.6"
-license = {file = "LICENSE"}
+license = { file = "LICENSE" }
 keywords = ["web client", "requests", "config", "yaml config", "wrapper"]
 authors = [
-  {name = "Jonas Werme", email = "jonas.werme@nsahq.se"},
-  {name = "Marcus Wallgren", email = "marcus.wallgren@nsahq.se"}
+  { name = "Jonas Werme", email = "jonas.werme@nsahq.se" },
+  { name = "Marcus Wallgren", email = "marcus.wallgren@nsahq.se" },
 ]
 maintainers = [
-  {name = "Jonas Werme", email = "jonas.werme@nsahq.se"},
-  {name = "Marcus Wallgren", email = "marcus.wallgren@nsahq.se"}
+  { name = "Jonas Werme", email = "jonas.werme@nsahq.se" },
+  { name = "Marcus Wallgren", email = "marcus.wallgren@nsahq.se" },
 ]
 classifiers = [
   "Programming Language :: Python",
@@ -34,9 +34,7 @@ classifiers = [
   "Operating System :: OS Independent",
 ]
 dynamic = ["version"]
-dependencies = [
-  "requests"
-]
+dependencies = ["requests", "pyyaml", "pyjwt"]
 
 [project.optional-dependencies]
 test = [
@@ -44,7 +42,7 @@ test = [
   "pytest-cov[all]",
   "tox[all]",
   "responses[all]",
-  "coverage[all]"
+  "coverage[all]",
 ]
 dev = [
   "black[all]",
@@ -60,7 +58,7 @@ dev = [
   "pytest-cov[all]",
   "tox[all]",
   "responses[all]",
-  "coverage[all]"
+  "coverage[all]",
 ]
 
 [project.urls]
@@ -104,26 +102,24 @@ exclude = '''
 
 [tool.isort]
 profile = "black"
-multi_line_output=3
-include_trailing_comma=true
-force_grid_wrap=0
-use_parentheses=true
-line_length=99
-known_first_party="pywrapid"
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+line_length = 99
+known_first_party = "pywrapid"
 
 [tool.mypy]
-files="src/"
-ignore_missing_imports=true
-disallow_untyped_defs=true
-warn_redundant_casts=true
-strict_equality=true
+files = "src/"
+ignore_missing_imports = true
+disallow_untyped_defs = true
+warn_redundant_casts = true
+strict_equality = true
 
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = "-ra -q"
-testpaths = [
-    "tests",
-]
+testpaths = ["tests"]
 
 [tool.pylint.'MESSAGES CONTROL']
 max-line-length = 100
