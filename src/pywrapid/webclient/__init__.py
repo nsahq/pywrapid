@@ -15,4 +15,10 @@ from .exceptions import (
     CredentialKeyFileError,
     CredentialURLError,
 )
-from .web import AuthorizationType, BasicAuthCredentials, WebClient, WebCredentials, X509Credentials
+from .web import (
+    AuthorizationType,
+    BasicAuthCredentials,
+    WebClient,
+    WebCredentials,
+    X509Credentials,
+)
