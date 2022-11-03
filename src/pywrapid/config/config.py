@@ -31,7 +31,7 @@ from pywrapid.config.exception import (
 from pywrapid.utils.dict_tools import dict_keys_exist
 from pywrapid.utils.file_tools import is_file_readable
 
-log = logging.Logger(__name__)
+log = logging.getLogger(__name__)
 
 
 class WrapidConfig:

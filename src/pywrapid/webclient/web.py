@@ -43,7 +43,7 @@ from .exceptions import (
     CredentialURLError,
 )
 
-log = logging.Logger(__name__)
+log = logging.getLogger(__name__)
 
 
 class AuthorizationType(Enum):
@@ -256,7 +256,7 @@ class WebClient:
 
         return jwt.decode(jwt_token, options={"verify_signature": False})
 
-    def generate_session(self, method: str = "POST") -> None:
+    def generate_session(self, method: str = "POST", **options) -> None:
         """Authenticate and generate new token
 
         Args:
@@ -267,7 +267,7 @@ class WebClient:
         """
 
         response = self.call(
-            method, self._login_url, raise_for_status=False, skip_authentication=True
+            method, self._login_url, raise_for_status=False, skip_authentication=True, **options
         )
 
         if response.status_code > 299 or response.status_code < 200:
@@ -343,7 +343,7 @@ class WebClient:
             "Authorization" not in options["headers"]
             and self._authorization_type != AuthorizationType.NONE
         ):
-            options["headers"] = {"Authorization": self._access_token}
+            options["headers"] = {"Authorization": self._access_token, **options["headers"]}
 
         try:
             response = request(method, url, **options)
@@ -352,13 +352,13 @@ class WebClient:
                 response.raise_for_status()
 
         except HTTPError as error:
-            raise ClientHTTPError from error
+            raise ClientHTTPError(error) from error
         except Timeout as error:
-            raise ClientTimeout from error
+            raise ClientTimeout(error) from error
         except TooManyRedirects as error:
-            raise ClientConnectionError from error
+            raise ClientConnectionError(error) from error
         except RequestException as error:
-            raise ClientException from error
+            raise ClientException(error) from error
 
         return response
 
