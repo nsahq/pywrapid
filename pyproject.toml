@@ -37,28 +37,23 @@ dynamic = ["version"]
 dependencies = ["requests", "pyyaml", "pyjwt"]
 
 [project.optional-dependencies]
-test = [
+tests = [
   "pytest[all]",
   "pytest-cov[all]",
   "tox[all]",
   "responses[all]",
   "coverage[all]",
-]
-dev = [
   "black[all]",
   "isort[all]",
   "flake8[all]",
   "mypy[all]",
   "pylint[all]",
+]
+docs = [
   "sphinx[all]",
   "sphinx_autodoc_typehints[all]",
   "sphinxcontrib-confluencebuilder[all]",
   "sphinx_rtd_theme[all]",
-  "pytest[all]",
-  "pytest-cov[all]",
-  "tox[all]",
-  "responses[all]",
-  "coverage[all]",
 ]
 
 [project.urls]
