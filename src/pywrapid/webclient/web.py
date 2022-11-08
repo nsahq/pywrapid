@@ -33,6 +33,7 @@ from pywrapid.utils.file_tools import is_file_readable
 
 from .exceptions import (
     ClientAuthenticationError,
+    ClientAuthorizationError,
     ClientConnectionError,
     ClientException,
     ClientHTTPError,
@@ -138,7 +139,7 @@ class X509Credentials(WebCredentials):
 
         if wrapid_config and (cert_file or key_file or login_url):
             raise CredentialError(
-                "Multiple configuration options used, use either a WrapidConfig derivative OR pass parameters"
+                "Multiple configuration options used, WrapidConfig derivative OR passed parameters"
             )
 
         if wrapid_config:
@@ -223,11 +224,14 @@ class WebClient:
         self._authorization_type = authorization_type
 
         if credentials:
-            self._credential_options = credentials.options  # type: ignore
-            self._login_url = credentials.login_url  # type: ignore
+            self._credential_options: dict = dict(**credentials.options)
+            self._login_url = str(credentials.login_url)
         self._authorization_expiry = datetime.now()
         self._access_token = ""  # nosec
-
+        try:
+            AuthorizationType(authorization_type).name
+        except ValueError as error:
+            raise ClientAuthorizationError(error) from error
         log.debug(
             "Initiating new client with authorization type %s and credential type %s",
             AuthorizationType(authorization_type).name,
@@ -256,7 +260,24 @@ class WebClient:
 
         return jwt.decode(jwt_token, options={"verify_signature": False})
 
-    def generate_session(self, method: str = "POST", **options) -> None:
+    def session_expired(self) -> bool:
+        """Check if our session has expired
+
+        Returns:
+            bool: True if token is expired, False if still valid
+        """
+        if not self._authorization_expiry:
+            return True
+
+        time_offset = datetime.now() + timedelta(seconds=1)  # Offset to avoid ms/ns race condition
+        if (
+            self._login_url and not self._access_token
+        ) or self._authorization_expiry < time_offset:
+            return False
+
+        return True
+
+    def generate_session(self, method: str = "POST", **options: Any) -> None:
         """Authenticate and generate new token
 
         Args:
@@ -267,7 +288,11 @@ class WebClient:
         """
 
         response = self.call(
-            method, self._login_url, raise_for_status=False, skip_authentication=True, **options
+            method,
+            str(self._login_url),
+            raise_for_status=False,
+            skip_authentication=True,
+            **options,
         )
 
         if response.status_code > 299 or response.status_code < 200:
@@ -299,6 +324,7 @@ class WebClient:
                         self._authorization_expiry = datetime.fromtimestamp(jwt_data[exp])
             log.debug("Authorization expiry time set to: %s", self._authorization_expiry)
 
+    # flake8: noqa: C901
     def call(
         self,
         method: str,
@@ -326,13 +352,8 @@ class WebClient:
         Returns:
             Response: requests.Response object
         """
-        # Handle authentication and token refresh
-        time_offset = datetime.now() + timedelta(seconds=1)  # Offset to avoid ms/ns race condition
-        if (
-            self._login_url and not self._access_token
-        ) or self._authorization_expiry < time_offset:
-            if not skip_authentication:
-                self.generate_session()
+        if not skip_authentication and self.session_expired():
+            self.generate_session()
 
         if "cert" not in options and "auth" not in options:
             options = {**options, **self._credential_options}
