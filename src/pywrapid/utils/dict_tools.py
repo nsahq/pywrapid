@@ -5,16 +5,17 @@ Collection of helper functions
 from copy import deepcopy
 
 
-def dict_merge(base: dict, data: dict, path: list = None) -> dict:
+def dict_merge(base: dict, data: dict, path: list = None, raise_on_conflict: bool = False) -> dict:
     """Recursive merge of dict objects
 
     Args:
         base (dict): _description_
         data (dict): _description_
         path (list, optional): _description_. Defaults to None.
+        raise_on_conflict (bool): Raise on conflict instead of overwriting base
 
     Raises:
-        ValueError: Raised on leaf conflict
+        ValueError: Raised on leaf conflict when raise_on_conflict is True
 
     Returns: Merged dict
     """
@@ -24,13 +25,23 @@ def dict_merge(base: dict, data: dict, path: list = None) -> dict:
     for key in data:
         if key in copy:
             if isinstance(copy[key], dict) and isinstance(data[key], dict):
-                dict_merge(copy[key], data[key], path + [str(key)])
+                copy[key] = dict_merge(
+                    copy[key],
+                    data[key],
+                    path=path + [str(key)],
+                    raise_on_conflict=raise_on_conflict,
+                )
+            elif data[key] is None:
+                continue
             elif copy[key] == data[key]:
-                pass  # same leaf value
+                continue  # same leaf value
             else:
-                raise ValueError(f"Conflict at {'.'.join(path + [str(key)])}")
+                if raise_on_conflict:
+                    raise ValueError(f"Conflict at {'.'.join(path + [str(key)])}")
+                copy[key] = data[key]
         else:
             copy[key] = data[key]
+
     return copy
 
 
