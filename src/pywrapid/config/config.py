@@ -184,8 +184,8 @@ class ApplicationConfig(WrapidConfig):
             file_type (str, optional): Config file type. Defaults to "yml".
             allow_config_discovery (bool, optional): Use exploration for config.
         """
-        self.config_path = ""
-        self.cfg = {}
+        self.config_path: str = ""
+        self.cfg: dict = {}
 
         if allow_config_discovery:
             self.config_path = self.application_config_location(
