@@ -1,0 +1,31 @@
+logging:
+  default:
+    file:
+      level: 0
+      location: tests/test.log
+    console:
+      level: 20
+  pywrapid:
+    file:
+      level: 0
+      location: tests/test.log
+      console: 0
+  test_case_4:
+    console:
+      level: 10
+  test_case_5:
+  test_case_6:
+    console:
+      level: 20
+  test_case_7:
+    console:
+      level: 30
+  test_case_8:
+    console:
+      level: 40
+  test_case_9:
+    console:
+      level: 50
+  test_case_10:
+    console:
+      level: 0
