@@ -58,7 +58,7 @@ docs = [
 
 [project.urls]
 homepage = "https://github.com/nsahq"
-documentation = "https://github.com/nsahq/pywrapid"
+documentation = "https://pywrapid.readthedocs.io/en/latest/"
 repository = "https://github.com/nsahq/pywrapid"
 changelog = "https://github.com/nsahq/pywrapid"
 
