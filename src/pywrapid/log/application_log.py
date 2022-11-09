@@ -14,7 +14,7 @@ __credits__ = ["Marcus Wallgren", "nsahq"]
 __license__ = "MIT"
 __version__ = "1.0.0"
 __maintainer__ = "Jonas Werme"
-__email__ = "jonas[dot]werme[at]teliacompany[dot]com"
+__email__ = "jonas[dot]werme[at]nsahq[dot]se"
 __status__ = "Prototype"
 
 import logging
