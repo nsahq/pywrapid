@@ -52,6 +52,18 @@ Authorization types:
 - JWT
 - OAUTH2
 
+### pywrapid.log
+Helper functions for setting up and controlling the defacto standard logging framework "logging".
+
+Allows you to easily configure logging handlers (currently only console and file) on a per module basis.
+
+Gives your application a similar configuration principle to djangos log management, where you can control logging for each import or derived modules.
+You can specify different log level or formats per module and per handler.
+Propagation to parent will not take place for modules you specify, giving you the control, while also being able to capture undefined child loggers.
+
+
+See documentation for more information.
+
 #### Dependencies
 - pyjwt
 
