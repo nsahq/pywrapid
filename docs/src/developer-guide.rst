@@ -30,6 +30,27 @@ or
     python -m build
 
 
+Linting and tests
+=================
+
+  - Tests should be created for all new functionality
+  - Feature branch must pass linting and tests before pull request is made
+  - Builds will run tox, and so should you
+
+Linters used:
+
+  - pylint
+  - flake8
+  - mypy
+  - black
+  - isort
+  - bandit
+
+Test suite:
+
+  - pytest
+
+
 Advanced Logging
 ================
 Log settings are available through the application configuration file.

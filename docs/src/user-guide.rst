@@ -234,14 +234,14 @@ pywrapid and its sub libraries use the following folder structure:
     │   ├───src
     │   │   ├───documentation-file1.rst
     │   │   ├───documentation-fileN.rst
-    │   │   ├───conf.py
+    │   │   └───conf.py
     ├───tests
     │   ├───test_pywrapid_modulename_filename1.py
     │   ├───test_pywrapid_modulename_filenameN.py
     │   ├───test_integration_testgroup1.py
     │   ├───test_integration_testgroupN.py
     │   ├───test_user_testgroup1.py
-    │   ├───test_user_testgroupN.py
+    │   └───test_user_testgroupN.py
     ├───tox.ini
-    ├───requirements
-    ├───pyproject.toml
+    ├───requirements.txt
+    └───pyproject.toml
