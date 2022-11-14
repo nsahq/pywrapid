@@ -3,7 +3,7 @@
 # pylint: skip-file
 
 from .config import ApplicationConfig, ConfigSubSection, WrapidConfig
-from .exception import (
+from .exceptions import (
     ConfigurationError,
     ConfigurationException,
     ConfigurationFileNotFoundError,
