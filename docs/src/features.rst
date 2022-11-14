@@ -9,6 +9,7 @@ To have modules added either submit a pull request or contact NSAHQ team for hel
 
 .. toctree::
 
-    features/utils
+    features/config
     features/log
+    features/utils
     features/webclient
