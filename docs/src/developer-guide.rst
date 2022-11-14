@@ -39,8 +39,9 @@ other packages being used as part of the application.
 
 For normal usage it will probably be enough to configure default logging to info level (see user-guide configuration section for reference).
 The following log possibillities exist:
-* Console   - logs to standard out and standard err
-* File      - log to a file location, for syslog logging in linux set this to /dev/syslog (journal can be configured to capture standard out as well)
+
+  * Console   - logs to standard out and standard err
+  * File      - log to a file location, for syslog logging in linux set this to /dev/syslog (journal can be configured to capture standard out as well)
 
 To do more advaced logging on a per module level you can configure debug logging for individual modules/packages used.
 

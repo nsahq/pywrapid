@@ -167,3 +167,13 @@ File:
 %(asctime)-15s [%(levelname)s] (%(name)s) %(message)s
 
 The name showing in the logfiles within () (parentheses) is the . (dot) notation you can use in the configuration file to target a specific modules logger.
+
+
+
+Technical Log Documentation
+---------------------------
+
+.. automodule:: pywrapid.log.application_log
+   :members:
+   :undoc-members:
+   :show-inheritance:

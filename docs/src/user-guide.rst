@@ -24,11 +24,8 @@ or
 
 The module structure is picked to allow for future use cases to be added with rolling updates without breaking backwards compatibillity.
 
-Each sub command contains its own help section (--help) showing you options and commands that are available. In traverse the structure to get to the usecase you want to run.
-
-To have usecases added either submit a pull request or contact SA Automation team for help with development.
-
-Access needed to run each use case is available in the use case documentation. You are responsible for applying for the accesses needed to run the usecase.
+Each sublibrary contains its own section in this documentation.
+To have additional modules or module features added; either submit a pull request or contact NSAHQ team for help with development.
 
 
 Configuration
@@ -37,11 +34,11 @@ Config classes that can be used through out the various pywrapid modules or as a
 Currently only yaml configs is supported, with more file types in the roadmap. (Feel free to contribute with additional sypport.)
 
 We intend to at least support the following file types:
-- YAML
-- TOML*
-- INI*
-- JSON*
-- KeyValue*
+  * YAML
+  * TOML*
+  * INI*
+  * JSON*
+  * KeyValue*
 
 (* Not implemented yet but planned)
 
@@ -127,8 +124,9 @@ other packages being used as part of the application.
 
 For normal usage it will probably be enough to configure default logging to info level (see configuration section for reference).
 The following log possibillities exist:
-* Console   - logs to standard out and standard err
-* File      - log to a file location, for syslog logging in linux set this to /dev/syslog (journal can be configured to capture standard out as well)
+
+  * Console   - logs to standard out and standard err
+  * File      - log to a file location, for syslog logging in linux set this to /dev/syslog (journal can be configured to capture standard out as well)
 
 To do more advaced logging on a per module level, please see the `advanced logging<features/log#Advanced Logging>` section under developer-guide.
 

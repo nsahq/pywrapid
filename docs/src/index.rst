@@ -8,7 +8,6 @@ Includes configuration management compatible with all other modules provided in 
 Extend functionality as you wish by wrapping the modules and/or inheriting the classes.
 
 
-
 .. toctree::
 
     user-guide
