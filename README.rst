@@ -2,6 +2,11 @@
 pywrapid
 ********
 
+.. image:: https://readthedocs.org/projects/pywrapid/badge/?version=latest
+    :target: https://pywrapid.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
+
+
 This library is created to wrap other popular libraries and extend their functionalities
 for rapid development of python applications.
 Includes configuration management compatible with all other modules provided in pywrapid.
