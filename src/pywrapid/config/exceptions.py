@@ -2,11 +2,11 @@
 """
 Configuration exceptions
 
-This library is for educational purposes only.
-Do no evil, do not break local or internation laws!
-By using this code, you take full responisbillity for your actions.
-The author have granted code access for educational purposes and is
-not liable for any missuse.
+Generic coniguration exceptions to use as is or as a base for
+your extended configuration management.
+
+Configuration base exception:
+ConfigurationError
 """
 # __author__ = "Jonas Werme"
 # __copyright__ = "Copyright (c) 2021 Jonas Werme"
@@ -19,16 +19,16 @@ not liable for any missuse.
 
 
 class ConfigurationException(Exception):
-    """Base exception"""
+    """Base Configuration Exception"""
 
 
 class ConfigurationError(ConfigurationException):
+    """Configuration Error Exception"""
+
+
+class ConfigurationValidationError(ConfigurationError):
     """Generic Configuration Error Exception"""
 
 
-class ConfigurationValidationError(ConfigurationException):
-    """Generic Configuration Error Exception"""
-
-
-class ConfigurationFileNotFoundError(ConfigurationException):
+class ConfigurationFileNotFoundError(ConfigurationError):
     """Generic Configuration Error Exception"""

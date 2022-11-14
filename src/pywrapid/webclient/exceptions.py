@@ -2,11 +2,15 @@
 """
 Client generic exceptions
 
-This library is for educational purposes only.
-Do no evil, do not break local or internation laws!
-By using this code, you take full responisbillity for your actions.
-The author have granted code access for educational purposes and is
-not liable for any missuse.
+Generic client and credential exceptions to use as is or as a base for
+your extended client/credential management.
+
+Client base exception:
+ClientError
+
+Credential base exception:
+CredentialError
+
 """
 # __author__ = "Jonas Werme"
 # __copyright__ = "Copyright (c) 2021 Jonas Werme"
@@ -20,39 +24,47 @@ not liable for any missuse.
 
 # Client
 class ClientException(Exception):
-    """Base exception"""
+    """Base Client Exception"""
 
 
-class ClientAuthorizationError(ClientException):
+class ClientError(ClientException):
+    """Client Error Exception"""
+
+
+class ClientAuthorizationError(ClientError):
     """Client Authorization Error Exception"""
 
 
-class ClientAuthenticationError(ClientException):
+class ClientAuthenticationError(ClientError):
     """Client Authorization Error Exception"""
 
 
-class ClientTokenRefreshError(ClientException):
+class ClientTokenRefreshError(ClientError):
     """Token Refresh Error Exception"""
 
 
-class ClientTimeout(ClientException):
+class ClientTimeout(ClientError):
     """Client Timeout Exception"""
 
 
-class ClientConnectionError(ClientException):
+class ClientConnectionError(ClientError):
     """Client Connection Error Exception"""
 
 
-class ClientHTTPError(ClientException):
+class ClientHTTPError(ClientError):
     """Client HTTP Error Exception"""
 
 
-class ClientURLError(ClientException):
+class ClientURLError(ClientError):
     """Client URL Error Exception"""
 
 
 # Credentials
-class CredentialError(Exception):
+class CredentialException(Exception):
+    """Credential Certificate Error Exception"""
+
+
+class CredentialError(CredentialException):
     """Credential Certificate Error Exception"""
 
 
