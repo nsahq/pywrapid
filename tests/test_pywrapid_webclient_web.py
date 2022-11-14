@@ -164,7 +164,7 @@ def test_case_11() -> None:
     module_0.BasicAuthCredentials(str_3, str_2)
     str_4 = "+)Ad"
     dict_0 = {web_client_0: str_4}
-    with pytest.raises(module_1.ClientException):
+    with pytest.raises(module_1.ClientError):
         module_0.WebClient(dict_config=dict_0, wrapid_config=str_1)
 
 

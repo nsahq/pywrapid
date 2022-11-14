@@ -35,7 +35,7 @@ from .exceptions import (
     ClientAuthenticationError,
     ClientAuthorizationError,
     ClientConnectionError,
-    ClientException,
+    ClientError,
     ClientHTTPError,
     ClientTimeout,
     CredentialCertificateFileError,
@@ -166,14 +166,17 @@ class X509Credentials(WebCredentials):
 
 
 class WebClient:
-    """Web Client
+    """Web Client base
 
     Generic web client class as base for creating application specific clients
     or to be used directly as a general use web client. Wraps the request library and
     adds generic exceptions.
 
     Passes web calls transparently to requests, meaning you can use any requests
-    option you see fit, such as proxy settings etc.
+    option you see fit, such as proxy settings etc by passing them as key word arguments.
+    If a configuration section named client_options is passed to the client,
+    these options will be set for the web communication. Passed arguments will have precedence
+    over configuration items.
 
     The client allows you to mix and match authetication types with authorization
     types to fit strange combinations used in some APIs.
@@ -213,7 +216,7 @@ class WebClient:
         self._config = {}
 
         if wrapid_config and dict_config:
-            raise ClientException(
+            raise ClientError(
                 "Initiation error: dict_config and wrapid_config are mutually exclusive"
             )
         if wrapid_config:
@@ -228,6 +231,7 @@ class WebClient:
             self._login_url = str(credentials.login_url)
         self._authorization_expiry = datetime.now()
         self._access_token = ""  # nosec
+
         try:
             AuthorizationType(authorization_type).name
         except ValueError as error:
@@ -247,7 +251,7 @@ class WebClient:
             token (str): Token to unpack
 
         Returns:
-            dict: _description_
+            dict: Unpacked JWT token
         """
         # Following 4 lines can be simplified with token.removeprefix("Bearer ")
         # for python version > 3.9
@@ -366,6 +370,9 @@ class WebClient:
         ):
             options["headers"] = {"Authorization": self._access_token, **options["headers"]}
 
+        if "client_options" in self.get_config:
+            options = {**self.get_config["client_options"], **options}
+
         try:
             response = request(method, url, **options)
 
@@ -379,7 +386,7 @@ class WebClient:
         except TooManyRedirects as error:
             raise ClientConnectionError(error) from error
         except RequestException as error:
-            raise ClientException(error) from error
+            raise ClientError(error) from error
 
         return response
 
