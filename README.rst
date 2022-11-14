@@ -1,4 +1,6 @@
-# pywrapid
+********
+pywrapid
+********
 
 This library is created to wrap other popular libraries and extend their functionalities
 for rapid development of python applications.
@@ -6,20 +8,23 @@ Includes configuration management compatible with all other modules provided in 
 
 Extend functionality as you wish by wrapping the modules and/or inheriting the classes.
 
-## Features
+Features
+========
 
-### pywrapid.config
+pywrapid.config
+---------------
+
 Config classes that can be used through out the various pywrapid modules or as a stand alone config management util.
 Currently only yaml configs is supported, with more file types in the roadmap. (Feel free to contribute with additional sypport.)
 
 We intend to at least support the following file types:
-- YAML
-- TOML*
-- INI*
-- JSON*
-- KeyValue*
+    - YAML
+    - TOML*
+    - INI*
+    - JSON*
+    - KeyValue*
 
-*) Not implemented yet but planned
+(* Not implemented yet but planned)
 
 Two general config classes is provided: ApplicationConfig and ConfigSubSection
 Both inherits the WrapidConfig class and exposes the configuration data as a dict under the "cfg" propery.
@@ -30,8 +35,10 @@ The exploration functionality can be used standalone using ApplicationConfig.app
 
 Simplicity is king and you can therefore use parts as you wish, or adopt wrapid config concept as a whole.
 
-#### Dependencies
-- PyYAML
+Dependencies
+------------
+
+    - PyYAML
 
 ### pywrapid.webclient
 Extends the well known requests library.
@@ -41,18 +48,22 @@ If a new version of the API your client consumes comes out with a different auth
 Gives you a generic web client class you can use as a base for your client creations.
 
 Credential types:
-- No authentication
-- Basic Auth
-- x509
+
+    - No authentication
+    - Basic Auth
+    - x509
 
 Authorization types:
-- NONE
-- BASIC
-- BEARER
-- JWT
-- OAUTH2
 
-### pywrapid.log
+    - NONE
+    - BASIC
+    - BEARER
+    - JWT
+    - OAUTH2
+
+pywrapid.log
+============
+
 Helper functions for setting up and controlling the defacto standard logging framework "logging".
 
 Allows you to easily configure logging handlers (currently only console and file) on a per module basis.
@@ -64,20 +75,26 @@ Propagation to parent will not take place for modules you specify, giving you th
 
 See documentation for more information.
 
-#### Dependencies
-- pyjwt
+Dependencies
+------------
 
-### Exceptions
+    - pyjwt
+
+Exceptions
+----------
+
 Each sub library comes with pywrapid exceptions.
 The exceptions will normalize multiple wrapped libraries/tools and extend with additional generic exceptions.
 
 
-## Dependencies
+Dependencies
+============
 
-- pyyaml
-- requests
-- pyjwt
+    - pyyaml
+    - requests
+    - pyjwt
 
-## Needed softwares
+Needed softwares
+================
 
-- python3.x
+    - python3.x
