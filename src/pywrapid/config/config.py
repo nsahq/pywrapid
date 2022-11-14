@@ -23,7 +23,7 @@ from typing import Type, Union
 
 import yaml
 
-from pywrapid.config.exception import (
+from pywrapid.config.exceptions import (
     ConfigurationError,
     ConfigurationFileNotFoundError,
     ConfigurationValidationError,

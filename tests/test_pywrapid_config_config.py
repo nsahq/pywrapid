@@ -7,7 +7,7 @@ import pathlib
 import pytest
 
 import pywrapid.config.config as module_0
-import pywrapid.config.exception as module_1
+import pywrapid.config.exceptions as module_1
 
 cwd = pathlib.Path().resolve()
 

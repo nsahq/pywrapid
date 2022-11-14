@@ -21,7 +21,7 @@ import logging
 from typing import Type, Union
 
 from pywrapid.config import WrapidConfig
-from pywrapid.config.exception import ConfigurationError
+from pywrapid.config.exceptions import ConfigurationError
 from pywrapid.utils import dict_merge
 
 
