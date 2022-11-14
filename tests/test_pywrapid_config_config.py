@@ -64,7 +64,7 @@ def test_case_5() -> None:
 def test_case_6() -> None:
     """String not WrapidConfig"""
     str_0 = "4"
-    with pytest.raises(AttributeError):
+    with pytest.raises(module_0.ConfigurationError):
         module_0.ConfigSubSection(str_0, str_0)
 
 
@@ -99,3 +99,21 @@ def test_case_10() -> None:
     wrapid_config_1 = module_0.ConfigSubSection(wrapid_config_0, "logging")
     assert isinstance(wrapid_config_1, module_0.ConfigSubSection)
     assert "default" in wrapid_config_1.cfg
+
+
+def test_case_11() -> None:
+    """Correct dict config type in subconfig"""
+    str_0 = "randomstr0"
+    str_1 = "randomstr1"
+    dict_0 = {str_0: {str_1: str_1}}
+    wrapid_config_0 = module_0.ConfigSubSection(conf=dict_0, subsection=str_0)
+    assert str_1 in wrapid_config_0.cfg
+
+
+def test_case_12() -> None:
+    """Missing section in dict config type in subconfig"""
+    str_0 = "randomstr0"
+    str_1 = "randomstr1"
+    dict_0 = {"missed_level": {str_1: str_1}}
+    with pytest.raises(module_0.ConfigurationError):
+        module_0.ConfigSubSection(conf=dict_0, subsection=str_0)

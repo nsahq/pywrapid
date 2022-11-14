@@ -19,7 +19,7 @@ not liable for any missuse.
 
 import logging
 import os
-from typing import Type
+from typing import Type, Union
 
 import yaml
 
@@ -258,7 +258,7 @@ class ConfigSubSection(WrapidConfig):
 
     Sectioned configuration data from WrapidConfig object
     """
-    def __init__(self, conf: Type[WrapidConfig], subsection: str = ""):
+    def __init__(self, conf: Union[Type[WrapidConfig], dict], subsection: str = ""):
         """Init method of ConfigSubSection
 
         Args:
@@ -270,7 +270,15 @@ class ConfigSubSection(WrapidConfig):
         """
         if subsection == "":
             raise ConfigurationError("No configuration subsection specified")
-        if subsection not in conf.cfg:
-            raise ConfigurationError(f"Missing configuration section: {subsection}")
         self._subsection_key = subsection
-        self.cfg = conf.cfg[subsection].copy()
+
+        if isinstance(conf, WrapidConfig):
+            if subsection not in conf.cfg:
+                raise ConfigurationError(f"Missing configuration section: {subsection}")
+            self.cfg = conf.cfg[subsection].copy()
+        elif isinstance(conf, dict):
+            if subsection not in conf:
+                raise ConfigurationError(f"Missing configuration section: {subsection}")
+            self.cfg = conf[subsection].copy()
+        else:
+            raise ConfigurationError(f"Invalid object type for configuration, {type(conf)}")
