@@ -11,6 +11,7 @@ Getting started
 ===============
 
 Install pywrapid from pypi
+
 .. code-block:: bash
 
     pip install pywrapid
