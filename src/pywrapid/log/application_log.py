@@ -106,7 +106,7 @@ def application_logging(config: Union[Type[WrapidConfig], dict]) -> None:
             if log_type == "console":
                 handler: logging.Handler = logging.StreamHandler()
             elif log_type == "file":
-                if "location" not in cfg or not cfg["location"]:
+                if not cfg[module][log_type]["location"]:
                     continue
                 handler = logging.FileHandler(
                     cfg[module].get("location", default[log_type]["location"])
