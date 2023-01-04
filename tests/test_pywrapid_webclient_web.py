@@ -51,7 +51,7 @@ def test_case_1() -> None:
 def test_case_2() -> None:
     """Empty param strings"""
     str_0 = ""
-    with pytest.raises(module_1.CredentialCertificateFileError):
+    with pytest.raises(module_1.CredentialError):
         module_0.X509Credentials(str_0, str_0, str_0)
 
 
@@ -189,7 +189,7 @@ def test_case_12() -> None:
 def test_case_13() -> None:
     """x509 Cert error"""
     str_0 = "\x0bs^#DH"
-    with pytest.raises(module_1.CredentialCertificateFileError):
+    with pytest.raises(module_1.CredentialError):
         module_0.X509Credentials(str_0, str_0)
 
 
@@ -203,7 +203,7 @@ def test_case_14() -> None:
         == "pywrapid.webclient.web.BasicAuthCredentials"
     )
 
-    x509_credentials_0 = module_0.X509Credentials(file, file)
+    x509_credentials_0 = module_0.X509Credentials(file, file, str_0)
     assert (
         f"{type(x509_credentials_0).__module__}.{type(x509_credentials_0).__qualname__}"
         == "pywrapid.webclient.web.X509Credentials"
@@ -218,6 +218,6 @@ def test_case_14() -> None:
     with pytest.raises(module_1.ClientAuthorizationError):
         module_0.WebClient(authorization_type=basic_auth_credentials_0)
     with pytest.raises(module_1.CredentialKeyFileError):
-        module_0.X509Credentials(file, str_0)
-    with pytest.raises(module_1.CredentialCertificateFileError):
-        module_0.X509Credentials(str_0, file)
+        module_0.X509Credentials(file, str_0, str_0)
+    with pytest.raises(module_1.CredentialError):
+        module_0.X509Credentials(str_0, file, str_0)

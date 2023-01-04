@@ -22,7 +22,7 @@ import logging
 from datetime import datetime, timedelta
 from enum import Enum
 from time import time
-from typing import Any, Type
+from typing import Any, Type, Union
 from urllib.parse import urlparse
 
 import jwt
@@ -111,15 +111,22 @@ class BasicAuthCredentials(WebCredentials):
         username: str,
         password: str,
         login_url: str = "",
-        wrapid_config: Type[WrapidConfig] = None,
+        config: Union[Type[WrapidConfig], dict] = None,
     ) -> None:
-        if wrapid_config and (login_url):
+        if config and not isinstance(config, WrapidConfig) and not isinstance(config, dict):
             raise CredentialError(
-                "Multiple configuration options used, use a WrapidConfig object OR pass parameters"
+                "Config pratameter must be of type dict or a WrapidConfig derivative"
+            )
+        if config and login_url:
+            raise CredentialError(
+                "Multiple configuration options used, WrapidConfig derivative OR passed parameters"
             )
 
-        if wrapid_config:
-            login_url = wrapid_config.cfg.get("login_url", "")
+        if config and isinstance(config, WrapidConfig):
+            config = dict(config.cfg)
+
+        if config and isinstance(config, dict):
+            login_url = config.get("login_url", "")
 
         super().__init__(login_url=login_url)
 
@@ -134,18 +141,29 @@ class X509Credentials(WebCredentials):
         cert_file: str = "",
         key_file: str = "",
         login_url: str = "",
-        wrapid_config: Type[WrapidConfig] = None,
+        config: Union[Type[WrapidConfig], dict] = None,
     ) -> None:
 
-        if wrapid_config and (cert_file or key_file or login_url):
+        if config and not isinstance(config, WrapidConfig) and not isinstance(config, dict):
+            raise CredentialError(
+                "Config pratameter must be of type dict or a WrapidConfig derivative"
+            )
+        if config and (cert_file or key_file or login_url):
             raise CredentialError(
                 "Multiple configuration options used, WrapidConfig derivative OR passed parameters"
             )
+        if not config and (not cert_file or not key_file or not login_url):
+            raise CredentialError(
+                "key_file, cert_file and login_url paramters must be set or use config object"
+            )
 
-        if wrapid_config:
-            cert_file = wrapid_config.cfg.get("cert_file", "")
-            key_file = wrapid_config.cfg.get("key_file", "")
-            login_url = wrapid_config.cfg.get("login_url", "")
+        if config and isinstance(config, WrapidConfig):
+            config = dict(config.cfg)
+
+        if config and isinstance(config, dict):
+            cert_file = config.get("cert_file", "")
+            key_file = config.get("key_file", "")
+            login_url = config.get("login_url", "")
 
         log.debug(
             "Loading x509 web credentials: cert_file=%s, key_file=%s, login_url=%s",
@@ -270,7 +288,7 @@ class WebClient:
         Returns:
             bool: True if token is expired, False if still valid
         """
-        if not self._authorization_expiry:
+        if not self._authorization_expiry or not self._access_token:
             return True
 
         time_offset = datetime.now() + timedelta(seconds=1)  # Offset to avoid ms/ns race condition
