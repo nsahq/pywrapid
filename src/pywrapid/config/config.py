@@ -19,7 +19,7 @@ not liable for any missuse.
 
 import logging
 import os
-from typing import Type, Union
+from typing import Optional, Type, Union
 
 import yaml
 
@@ -82,7 +82,7 @@ class WrapidConfig:
         return is_file_readable(path)
 
     def application_config_location(
-        self, application_name: str, file_type: str = "yml", locations: list = None
+        self, application_name: str, file_type: str = "yml", locations: Optional[list] = None
     ) -> str:
         """Discovery to find configuration file for an application on Windows/Linux/Mac
 
@@ -160,9 +160,7 @@ class WrapidConfig:
 
                 return str(p_loc)
 
-        raise ConfigurationFileNotFoundError(
-            "Unable to locate configuration file location"
-        )
+        raise ConfigurationFileNotFoundError("Unable to locate configuration file location")
 
 
 class ApplicationConfig(WrapidConfig):
@@ -204,7 +202,7 @@ class ApplicationConfig(WrapidConfig):
         # TODO: Add toml file
 
     def yaml_config_to_dict(
-        self, config: str = "", expected_keys: list = None, allow_empty: bool = False
+        self, config: str = "", expected_keys: Optional[list] = None, allow_empty: bool = False
     ) -> dict:
         """Extract configuration data from a yaml file
 
@@ -258,6 +256,7 @@ class ConfigSubSection(WrapidConfig):
 
     Sectioned configuration data from WrapidConfig object
     """
+
     def __init__(self, conf: Union[Type[WrapidConfig], dict], subsection: str = ""):
         """Init method of ConfigSubSection
 

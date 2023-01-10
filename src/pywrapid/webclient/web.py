@@ -22,7 +22,7 @@ import logging
 from datetime import datetime, timedelta
 from enum import Enum
 from time import time
-from typing import Any, Type, Union
+from typing import Any, Optional, Type, Union
 from urllib.parse import urlparse
 
 import jwt
@@ -111,7 +111,7 @@ class BasicAuthCredentials(WebCredentials):
         username: str,
         password: str,
         login_url: str = "",
-        config: Union[Type[WrapidConfig], dict] = None,
+        config: Union[Type[WrapidConfig], dict, None] = None,
     ) -> None:
         if config and not isinstance(config, WrapidConfig) and not isinstance(config, dict):
             raise CredentialError(
@@ -141,7 +141,7 @@ class X509Credentials(WebCredentials):
         cert_file: str = "",
         key_file: str = "",
         login_url: str = "",
-        config: Union[Type[WrapidConfig], dict] = None,
+        config: Union[Type[WrapidConfig], dict, None] = None,
     ) -> None:
 
         if config and not isinstance(config, WrapidConfig) and not isinstance(config, dict):
@@ -208,9 +208,9 @@ class WebClient:
     def __init__(
         self,
         authorization_type: AuthorizationType = AuthorizationType.NONE,
-        credentials: Type[WebCredentials] = None,
-        dict_config: dict = None,
-        wrapid_config: Type[WrapidConfig] = None,
+        credentials: Optional[Type[WebCredentials]] = None,
+        dict_config: Optional[dict] = None,
+        wrapid_config: Optional[Type[WrapidConfig]] = None,
     ):
         """Init function for web client class
 

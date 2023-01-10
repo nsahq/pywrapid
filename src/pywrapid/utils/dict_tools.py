@@ -3,9 +3,12 @@
 Collection of helper functions
 """
 from copy import deepcopy
+from typing import Optional
 
 
-def dict_merge(base: dict, data: dict, path: list = None, raise_on_conflict: bool = False) -> dict:
+def dict_merge(
+    base: dict, data: dict, path: Optional[list] = None, raise_on_conflict: bool = False
+) -> dict:
     """Recursive merge of dict objects
 
     Args:
