@@ -291,10 +291,8 @@ class WebClient:
         if not self._authorization_expiry or not self._access_token:
             return True
 
-        time_offset = datetime.now() + timedelta(seconds=1)  # Offset to avoid ms/ns race condition
-        if (
-            self._login_url and not self._access_token
-        ) or self._authorization_expiry < time_offset:
+        time_offset = datetime.utcnow() + timedelta(seconds=10)  # Offset to avoid ms/ns race condition
+        if time_offset < self._authorization_expiry :
             return False
 
         return True
