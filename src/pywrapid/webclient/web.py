@@ -143,7 +143,6 @@ class X509Credentials(WebCredentials):
         login_url: str = "",
         config: Union[Type[WrapidConfig], dict, None] = None,
     ) -> None:
-
         if config and not isinstance(config, WrapidConfig) and not isinstance(config, dict):
             raise CredentialError(
                 "Config pratameter must be of type dict or a WrapidConfig derivative"
@@ -291,8 +290,10 @@ class WebClient:
         if not self._authorization_expiry or not self._access_token:
             return True
 
-        time_offset = datetime.utcnow() + timedelta(seconds=10)  # Offset to avoid ms/ns race condition
-        if time_offset < self._authorization_expiry :
+        time_offset = datetime.utcnow() + timedelta(
+            seconds=10
+        )  # Offset to avoid ms/ns race condition
+        if time_offset < self._authorization_expiry:
             return False
 
         return True

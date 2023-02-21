@@ -24,7 +24,6 @@ def is_file_readable(path: str) -> bool:
         and os.access(path, os.R_OK)
         and os.path.getsize(path) > 0
     ):
-
         return True
 
     return False
