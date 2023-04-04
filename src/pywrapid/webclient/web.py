@@ -290,7 +290,7 @@ class WebClient:
         if not self._authorization_expiry or not self._access_token:
             return True
 
-        time_offset = datetime.utcnow() + timedelta(
+        time_offset = datetime.now() + timedelta(
             seconds=10
         )  # Offset to avoid ms/ns race condition
         if time_offset < self._authorization_expiry:
@@ -307,7 +307,6 @@ class WebClient:
         Raises:
             ClientAuthenticationError
         """
-
         response = self.call(
             method,
             str(self._login_url),
@@ -326,7 +325,6 @@ class WebClient:
             raise ClientAuthenticationError(
                 f"Unable to generate new session: [{response.status_code}] {response.content!r}"
             )
-
         if "Authorization" in response.headers:
             self._access_token = response.headers["Authorization"]
 
@@ -337,7 +335,7 @@ class WebClient:
 
             for exp in ["expiresIn", "exp", "expires_in", "expires"]:
                 if exp in jwt_data:
-                    if jwt_data[exp] < 44640:
+                    if jwt_data[exp] < 44640:  # Handle poor expiry implementations with offset
                         self._authorization_expiry = datetime.fromtimestamp(
                             unix_now + jwt_data[exp]
                         )
