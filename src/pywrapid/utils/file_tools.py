@@ -27,3 +27,23 @@ def is_file_readable(path: str) -> bool:
         return True
 
     return False
+
+
+def is_file_writable(path: str) -> bool:
+    """Checks a file in a given path to make sure it:
+        - exists
+        - is a file
+        - is writable
+
+    Args:
+        path (str): Path to configuration file.
+
+    Returns:
+        bool: True/False.
+    """
+    if os.path.exists(path) and os.path.isfile(path) and os.access(path, os.W_OK):
+        return True
+
+    return False
+
+
