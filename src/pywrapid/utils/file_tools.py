@@ -65,3 +65,19 @@ def is_directory_readable(path: str) -> bool:
     return False
 
 
+def is_directory_writable(path: str) -> bool:
+    """Checks a directory in a given path to make sure it:
+        - exists
+        - is a directory
+        - is writable
+
+    Args:
+        path (str): Path to configuration file.
+
+    Returns:
+        bool: True/False.
+    """
+    if os.path.exists(path) and os.path.isdir(path) and os.access(path, os.W_OK):
+        return True
+
+    return False
