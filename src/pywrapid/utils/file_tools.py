@@ -219,8 +219,8 @@ def find_directory_content(  # pylint: disable=R0912,R0914
             for exclude_pattern in exclude_patterns:
                 dir_count = len(dirs)
                 file_count = len(files)
-                dirs[:] = [d for d in dirs if not re.match(exclude_pattern, d)]
-                files[:] = [f for f in files if not re.match(exclude_pattern, f)]
+                dirs[:] = [d for d in dirs if not re.findall(exclude_pattern, d)]
+                files[:] = [f for f in files if not re.findall(exclude_pattern, f)]
                 log.debug(
                     "Excluding %s files and %s directories due to pattern matching: %s",
                     file_count - len(files),

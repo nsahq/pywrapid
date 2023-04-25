@@ -283,7 +283,47 @@ def test_find_directory_content_6(filesystem_fixture_0: str) -> None:
     # TODO: Add tests to find all but exclude pattern
 
 
-def test_find_directory_content_exceptions_0(tmp_path: str) -> None:
+def test_find_directory_content_7(filesystem_fixture_0: str) -> None:
+    """Test find_directory_content for all except a certain match"""
+    files = module_0.find_directory_content(filesystem_fixture_0, exclude_patterns=["0_0_0"])
+    assert len(files) == 9
+    for file in files:
+        if "test_dir" in file["name"]:
+            assert file["type"] == "directory"
+            assert "size" not in file
+            assert "symlink" not in file
+            assert file["mount_point"] is False
+        elif "test_file" in file["name"]:
+            assert file["type"] == "file"
+            assert "size" in file
+            assert "symlink" not in file
+            assert "mount_point" not in file
+        elif "symlink" in file["name"]:
+            assert file["type"] == "symlink"
+            assert "symlink" in file
+
+
+def test_find_directory_content_8(filesystem_fixture_0: str) -> None:
+    """Test find_directory_content for all files, directories, and symlinks"""
+    files = module_0.find_directory_content(filesystem_fixture_0, depth=0)
+    assert len(files) == 14
+    for file in files:
+        if "test_dir" in file["name"]:
+            assert file["type"] == "directory"
+            assert "size" not in file
+            assert "symlink" not in file
+            assert file["mount_point"] is False
+        elif "test_file" in file["name"]:
+            assert file["type"] == "file"
+            assert "size" in file
+            assert "symlink" not in file
+            assert "mount_point" not in file
+        elif "symlink" in file["name"]:
+            assert file["type"] == "symlink"
+            assert "symlink" in file
+
+
+def test_find_directory_content_exceptions_0() -> None:
     """Test find_directory_content exceptions"""
     with pytest.raises(OSError):
         module_0.find_directory_content("not_real_path")
