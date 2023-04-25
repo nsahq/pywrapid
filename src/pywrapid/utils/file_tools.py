@@ -147,7 +147,7 @@ def get_metadata(path: str) -> dict:
 
 
 def find_directory_content(  # pylint: disable=R0912,R0914
-    path: str, depth: int = 0, pattern: str = "", **options: Any
+    path: str, depth: int = 0, **options: Any
 ) -> list[dict]:
     """Get directory content and allow os walk.
     Includes sub levels of user defined depth with metadata and item names as list of dict return.
@@ -155,7 +155,6 @@ def find_directory_content(  # pylint: disable=R0912,R0914
     Args:
         path (str): Path to configuration file.
         depth (int, optional): Depth to walk. Defaults to 0/unlimited.
-        pattern (str, optional): Pattern to match. Defaults to "".
 
     Options:
         exclude_files (bool, optional): Exclude files from return. Defaults to False.
@@ -229,9 +228,6 @@ def find_directory_content(  # pylint: disable=R0912,R0914
                     dir_count - len(dirs),
                     exclude_pattern,
                 )
-        if pattern:
-            dirs[:] = [d for d in dirs if re.match(pattern, d)]
-            files[:] = [f for f in files if re.match(pattern, f)]
 
         if not exclude_directories and dirs:
             for directory in dirs:
