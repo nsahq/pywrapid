@@ -241,8 +241,9 @@ class ApplicationConfig(WrapidConfig):
             if expected_keys != []:
                 self.validate_keys(expected_keys, allow_empty)
 
-        except FileNotFoundError:
-            ConfigurationFileNotFoundError(f"Configuration file not found: {config}")
+        except FileNotFoundError as error:
+            raise ConfigurationFileNotFoundError(
+                f"Configuration file not found: {config}") from error
         except ValueError as error:
             raise ConfigurationError(f"Configuration value error for {config}: {error}") from error
         except Exception as error:
