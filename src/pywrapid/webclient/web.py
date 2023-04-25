@@ -244,7 +244,7 @@ class WebClient:
         self._authorization_type = authorization_type
 
         if credentials:
-            self._credential_options: dict = dict(**credentials.options)
+            self._credential_options: dict = dict(**credentials.options)  #  pylint: disable=R1735
             self._login_url = str(credentials.login_url)
         self._authorization_expiry = datetime.now()
         self._access_token = ""  # nosec
