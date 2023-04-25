@@ -135,8 +135,7 @@ def get_metadata(path: str) -> dict:
         metadata["type"] = "directory"
         metadata.pop("size")
         metadata["mount_point"] = os.path.ismount(path)
-
-    if os.path.isfile(path):
+    elif os.path.isfile(path):
         metadata["type"] = "file"
 
     if os.path.islink(path):
@@ -232,9 +231,15 @@ def find_directory_content(  # pylint: disable=R0912,R0914
         if not exclude_directories and dirs:
             for directory in dirs:
                 results.append(get_metadata(os.path.join(root, directory)))
+        elif exclude_directories and not exclude_symlinks and sym_dirs:
+            for directory in sym_dirs:
+                results.append(get_metadata(os.path.join(root, directory)))
 
         if not exclude_files and files:
             for file in files:
+                results.append(get_metadata(os.path.join(root, file)))
+        elif exclude_files and not exclude_symlinks and sym_files:
+            for file in sym_files:
                 results.append(get_metadata(os.path.join(root, file)))
 
     return results
