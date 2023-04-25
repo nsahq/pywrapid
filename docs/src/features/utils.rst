@@ -3,15 +3,15 @@ Pywrapid Utils
 **************
 Documentaiton coming soon
 
-Technical Utils Documentation
------------------------------
+Dict tools
+----------
 
 .. automodule:: pywrapid.utils.dict_tools
    :members:
    :undoc-members:
-   :show-inheritance:
 
-.. automodule:: pywrapid.utils.file_tools
+Filesystem tools
+----------------
+
+.. automodule:: pywrapid.utils.filesystem_tools
    :members:
-   :undoc-members:
-   :show-inheritance:

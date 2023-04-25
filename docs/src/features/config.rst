@@ -85,14 +85,12 @@ Application Configuration
 
 .. autoclass:: pywrapid.config.ApplicationConfig
    :members:
-   :undoc-members:
    :show-inheritance:
 
 Configuration Sub section
 -------------------------
 .. autoclass:: pywrapid.config.ConfigSubSection
    :members:
-   :undoc-members:
    :show-inheritance:
 
 Exceptions
