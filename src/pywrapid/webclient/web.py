@@ -28,8 +28,8 @@ from urllib.parse import urlparse
 import jwt
 from requests import HTTPError, RequestException, Response, Timeout, TooManyRedirects, request
 
-from pywrapid.config.config import WrapidConfig
-from pywrapid.utils.file_tools import is_file_readable
+from pywrapid.config import WrapidConfig
+from pywrapid.utils import is_file_readable
 
 from .exceptions import (
     ClientAuthenticationError,

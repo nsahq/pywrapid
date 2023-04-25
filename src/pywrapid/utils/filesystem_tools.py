@@ -145,9 +145,9 @@ def get_metadata(path: str) -> dict:
     return metadata
 
 
-def find_directory_content(  # pylint: disable=R0912,R0914
+def find_directory_content(
     path: str, depth: int = 0, **options: Any
-) -> list[dict]:
+) -> list[dict]:  # pylint: disable=R0912,R0914
     """Get directory content and allow os walk.
     Includes sub levels of user defined depth with metadata and item names as list of dict return.
 

@@ -28,8 +28,7 @@ from pywrapid.config.exceptions import (
     ConfigurationFileNotFoundError,
     ConfigurationValidationError,
 )
-from pywrapid.utils.dict_tools import dict_keys_exist
-from pywrapid.utils.file_tools import is_file_readable
+from pywrapid.utils import dict_keys_exist, is_file_readable
 
 log = logging.getLogger(__name__)
 
