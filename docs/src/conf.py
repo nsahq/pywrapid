@@ -19,9 +19,8 @@ import sphinx_rtd_theme
 test_path = os.path.abspath("../")
 tp = os.path.abspath(os.path.join(test_path, "../", "src"))
 sys.path.insert(0, tp)
-sys.path.insert(0, os.path.abspath("."))
-sys.path.insert(0, os.path.abspath("../"))
-sys.path.insert(0, os.path.abspath("../src/pywrapid"))
+sys.path.insert(0, os.path.abspath("../../"))
+sys.path.insert(0, os.path.abspath("../../src/pywrapid"))
 # pylint: disable=invalid-name
 
 # -- Project information -----------------------------------------------------
