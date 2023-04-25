@@ -5,7 +5,7 @@ import os
 
 import pytest
 
-import pywrapid.utils.file_tools as module_0
+import pywrapid.utils as module_0
 
 # pylint: disable=redefined-outer-name, protected-access
 
