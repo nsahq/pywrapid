@@ -29,8 +29,8 @@ project = "pywrapid"
 copyright = f"2022-{datetime.now().year}, NSAHQ"  # pylint: disable=redefined-builtin
 author = "Jonas Werme"
 
-version = "0.0.1"
-release = "0.0.1"
+version = "0.2.0"
+release = "0.2.0"
 
 # -- General configuration ---------------------------------------------------
 
