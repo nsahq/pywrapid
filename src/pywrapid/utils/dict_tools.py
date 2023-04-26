@@ -9,11 +9,17 @@ from typing import Optional
 def dict_merge(
     base: dict, data: dict, path: Optional[list] = None, raise_on_conflict: bool = False
 ) -> dict:
-    """Recursive merge of dict objects
+    """Recursive merge of dict objects into new dict
+
+    The merge will make a deep copy of the base dict and merge the data dict into it.
+    It will not modify the base dict being passed in.
+
+    If the same key exists in base and data, the value from data will be used unless
+    raise_on_conflict is True, in which case a ValueError will be raised.
 
     Args:
-        base (dict): _description_
-        data (dict): _description_
+        base (dict): The base dict to merge into
+        data (dict): The data dict to merge into base
         path (list, optional): _description_. Defaults to None.
         raise_on_conflict (bool): Raise on conflict instead of overwriting base
 
@@ -37,7 +43,7 @@ def dict_merge(
             elif data[key] is None:
                 continue
             elif copy[key] == data[key]:
-                continue  # same leaf value
+                continue  # same leaf value, skip traversal if children are the same
             else:
                 if raise_on_conflict:
                     raise ValueError(f"Conflict at {'.'.join(path + [str(key)])}")
