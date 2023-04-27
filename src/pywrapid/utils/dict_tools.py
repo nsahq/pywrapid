@@ -79,8 +79,8 @@ def dict_keys_exist(
             raise ValueError("No expected values supplied")
         return False
 
+    missed = []
     for key in expected_keys:
-        missed = []
         if key not in data:
             missed.append(key)
         elif data[key] in ["", (), [], {}, None] and allow_empty is False:
