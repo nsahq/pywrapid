@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-"""Pywrapid config tests"""
+"""Pywrapid filesystem tools tests"""
 
 import os
 
