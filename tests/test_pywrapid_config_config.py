@@ -18,16 +18,19 @@ def fixture_yaml_file_0(tmp_path) -> str:
     # Top level
     path_0 = tmp_path / "sample.yml"
     path_0.touch()
-    path_0.write_text("""a: "aaa"
+    path_0.write_text(
+        """a: "aaa"
 b:
   c: "ccc"
   d: "ddd"
 e:
   - "hello"
   - "world"
-""")
+"""
+    )
 
     return os.path.abspath(f"{tmp_path}/sample.yml")
+
 
 @pytest.fixture()
 def fixture_yaml_file_1(tmp_path) -> str:
@@ -35,13 +38,15 @@ def fixture_yaml_file_1(tmp_path) -> str:
     # Top level
     path_0 = tmp_path / "sample.yml"
     path_0.touch()
-    path_0.write_text("""I am
+    path_0.write_text(
+        """I am
 n:ot
     even close
 to being valid
 =
 $
-""")
+"""
+    )
 
     return os.path.abspath(f"{tmp_path}/sample.yml")
 
@@ -114,7 +119,9 @@ def test_config_wrapidconfig_9() -> None:
 
 def test_config_wrapidconfig_10(fixture_yaml_file_0) -> None:
     """Valid application config for wrapidconfig"""
-    wrapid_config_0 = module_0.ApplicationConfig("tmp", config_path=fixture_yaml_file_0, allow_config_discovery=False)
+    wrapid_config_0 = module_0.ApplicationConfig(
+        "tmp", config_path=fixture_yaml_file_0, allow_config_discovery=False
+    )
     str_0 = wrapid_config_0.application_config_location("tmp", locations=[fixture_yaml_file_0])
     assert str_0 == fixture_yaml_file_0
 
@@ -229,6 +236,7 @@ def test_config_applicationconfig_yaml_config_to_dict_3(fixture_yaml_file_0: str
         module_0.ApplicationConfig.yaml_config_to_dict(
             cfg_0, config=fixture_yaml_file_0, expected_keys=["notreal"]
         )
+
 
 def test_config_applicationconfig_yaml_config_to_dict_4(fixture_yaml_file_1: str) -> None:
     """Test yaml config to dict for bad yaml format"""
