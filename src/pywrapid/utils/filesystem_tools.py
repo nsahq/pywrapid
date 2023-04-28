@@ -3,6 +3,7 @@
 Collection of file helper functions
 """
 import logging
+import operator
 import os
 import re
 from typing import Any
@@ -145,9 +146,64 @@ def get_metadata(path: str) -> dict:
     return metadata
 
 
-def find_directory_content(
+def _special_sort(data: dict, order_by: str, order: str) -> list[dict]:
+    """Internal function to sort filesystem meta data by special keys.
+
+    Args:
+        data (dict): Data to sort.
+        order_by (str): Key to perform primary sort by.
+        order (str): Order of results. asc|desc
+    """
+    available_order_bys = [
+        "type",
+        "path",
+        "size",
+        "symlink",
+        "mount_point",
+        "name",
+        "access_time",
+        "create_time",
+        "modify_time",
+        "group",
+        "owner",
+        "permissions",
+        "inode",
+    ]
+    if order not in ["asc", "ascending", "desc", "descending"]:
+        raise ValueError(f"Invalid sort order {order}")
+
+    if order_by in ["symlink", "mount_point"] or order_by not in available_order_bys:
+        raise ValueError(f"Invalid sort key {order_by}")
+
+    fallback_sort = ["type", "path", "size"]
+    if order_by in fallback_sort:
+        del fallback_sort[fallback_sort.index(order_by)]
+
+    computed_sort = [order_by, *fallback_sort]
+
+    size_result = [result for result in data if "size" in result]
+    size_result = sorted(size_result, key=operator.itemgetter("size"))
+
+    if order_by != "size":
+        del computed_sort[computed_sort.index("size")]
+
+    for result in size_result:
+        data.remove(result)
+        data.append(result)
+
+    data = sorted(
+        data,
+        key=operator.itemgetter(
+            *computed_sort,
+        ),
+    )
+
+    return data if order.lower() in ["asc", "ascending"] else list(reversed(data))
+
+
+def find_directory_content(  # pylint: disable=R0912,R0914
     path: str, depth: int = 0, **options: Any
-) -> list[dict]:  # pylint: disable=R0912,R0914
+) -> list[dict]:
     """Get directory content and allow os walk.
     Includes sub levels of user defined depth with metadata and item names as list of dict return.
 
@@ -161,20 +217,24 @@ def find_directory_content(
         exclude_symlinks (bool, optional): Exclude symlinks from return. Defaults to False.
         exclude_pattern (str, optional): Pattern to exclude. Defaults to "".
         follow_symlinks (bool, optional): Follow symlinks. Defaults to False.
+        order_by (str, optional): Order by key. Defaults to "path". Not "symlink" or "mount_point"
+        order (str, optional): Order by direction. Defaults to "desc". "asc"|"desc"
 
     Returns:
         list[dict]: List of dict with metadata and item names
                     type (file, directory, symlink),
                     name,
                     path,
-                    size,
+                    size, (file only)
                     access time,
-                    crete time,
+                    create time,
                     modify time,
                     group,
                     owner,
                     permissions,
                     inode
+                    mount_point (directory only)
+                    symlink (symlink only)
     """
     # Handle options
     follow_symlinks = options.get("follow_symlinks", False)
@@ -182,6 +242,8 @@ def find_directory_content(
     exclude_files = options.get("exclude_files", False)
     exclude_symlinks = options.get("exclude_symlinks", False)
     exclude_patterns: list[str] = options.get("exclude_patterns", [])
+    order_by = options.get("order_by", "path")
+    order = options.get("order", "desc")
 
     results = []
     # Abort if base path is not readable
@@ -242,4 +304,4 @@ def find_directory_content(
             for file in sym_files:
                 results.append(get_metadata(os.path.join(root, file)))
 
-    return results
+    return _special_sort(data=results, order_by=order_by, order=order)
