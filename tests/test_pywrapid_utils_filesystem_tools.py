@@ -7,7 +7,7 @@ import pytest
 
 import pywrapid.utils as module_0
 
-# pylint: disable=redefined-outer-name, protected-access
+# pylint: disable=redefined-outer-name, protected-access, no-member
 
 
 @pytest.fixture()
@@ -100,6 +100,7 @@ def test_is_directory_writable_1(tmp_path: pytest.TempPathFactory) -> None:
     assert module_0.is_directory_writable(tmp_path) is True
 
 
+# pylint: disable=too-many-statements
 def test_get_metadata(filesystem_fixture_0: str) -> None:
     """Test get_metadata function"""
     # Generate file structure

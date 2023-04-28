@@ -11,7 +11,7 @@ import pywrapid.config.exceptions as module_1
 
 cwd = pathlib.Path().resolve()
 
-
+# pylint: disable=redefined-outer-name
 @pytest.fixture()
 def fixture_yaml_file_0(tmp_path) -> str:
     """Fixture for producing sample yaml config file"""
@@ -210,15 +210,15 @@ def test_config_applicationconfig_yaml_config_to_dict_0(fixture_yaml_file_0: str
     dict_0 = cfg_0.cfg
     assert isinstance(dict_0, dict)
     assert "a" in dict_0
-    assert type(dict_0["a"]) is str
-    assert type(dict_0["b"]) is dict
-    assert type(dict_0["e"]) is list
+    assert isinstance(dict_0["a"], str)
+    assert isinstance(dict_0["b"], dict)
+    assert isinstance(dict_0["e"], list)
     assert "hello" in dict_0["e"]
     assert "world" in dict_0["e"]
     assert "c" in dict_0["b"]
     assert "d" in dict_0["b"]
-    assert type(dict_0["b"]["c"]) is str
-    assert type(dict_0["b"]["d"]) is str
+    assert isinstance(dict_0["b"]["c"], str)
+    assert isinstance(dict_0["b"]["d"], str)
 
 
 def test_config_applicationconfig_yaml_config_to_dict_1() -> None:
@@ -241,4 +241,4 @@ def test_config_applicationconfig_yaml_config_to_dict_3(fixture_yaml_file_0: str
 def test_config_applicationconfig_yaml_config_to_dict_4(fixture_yaml_file_1: str) -> None:
     """Test yaml config to dict for bad yaml format"""
     with pytest.raises(module_1.ConfigurationValidationError):
-        cfg_0 = module_0.ApplicationConfig("tmp", config_path=fixture_yaml_file_1)
+        module_0.ApplicationConfig("tmp", config_path=fixture_yaml_file_1)

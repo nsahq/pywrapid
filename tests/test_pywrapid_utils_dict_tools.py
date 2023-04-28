@@ -36,7 +36,6 @@ def test_utils_dict_tools_dict_merge_3():
     """Test dict_merge, raise on conflict"""
     base = {"a": 1, "b": {"c": 2, "d": 3}, "f": 5}
     data = {"b": {"c": 4, "e": 5}, "f": 6}
-    expected = {"a": 1, "b": {"c": 4, "d": 3, "e": 5}, "f": 6}
     with pytest.raises(ValueError):
         module_0.dict_merge(base, data, raise_on_conflict=True)
 
