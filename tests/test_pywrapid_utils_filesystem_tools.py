@@ -11,46 +11,46 @@ import pywrapid.utils as module_0
 
 
 @pytest.fixture()
-def filesystem_fixture_0(tmp_path) -> str:
+def filesystem_fixture_0(tmp_path: str) -> str:
     """Fixture for producing file and directory structure"""
     # Top level
-    path_0 = tmp_path / "test_dir_0" / "test_file_0_0"
+    path_0 = tmp_path / "test_dir_0" / "test_file_0_0"  # type: ignore
     path_0.parent.mkdir()
     path_0.touch()
     path_0.write_text("sample text - Lorem ipsum dolor sit amet, consectetur adipiscing elit.")
 
-    path_1 = tmp_path / "test_dir_1" / "test_file_1_0"
+    path_1 = tmp_path / "test_dir_1" / "test_file_1_0"  # type: ignore
     path_1.parent.mkdir()
     path_1.touch()
     path_1.write_text("sample text - Lorem ipsum dolor sit amet, consectetur adipiscing elit.")
 
-    single_file_0 = tmp_path / "test_file_0"
+    single_file_0 = tmp_path / "test_file_0"  # type: ignore
     single_file_0.touch()
     single_file_0.write_text(
         "sample text - Lorem ipsum dolor sit amet, consectetur adipiscing elit."
     )
 
-    single_file_1 = tmp_path / "test_file_1"
+    single_file_1 = tmp_path / "test_file_1"  # type: ignore
     single_file_1.touch()
     single_file_1.write_text(
         "sample text - Lorem ipsum dolor sit amet, consectetur adipiscing elit."
     )
 
     # Second level
-    path_2 = tmp_path / "test_dir_0" / "test_dir_0_0" / "test_file_0_0_0"
+    path_2 = tmp_path / "test_dir_0" / "test_dir_0_0" / "test_file_0_0_0"  # type: ignore
     path_2.parent.mkdir()
     path_2.touch()
     path_2.write_text("sample text - Lorem ipsum dolor sit amet, consectetur adipiscing elit.")
 
     # Third level
-    path_3 = tmp_path / "test_dir_0" / "test_dir_0_0" / "test_dir_0_0_0" / "test_file_0_0_0_0"
+    path_3 = tmp_path / "test_dir_0" / "test_dir_0_0" / "test_dir_0_0_0" / "test_file_0_0_0_0"  # type: ignore
     path_3.parent.mkdir()
     path_3.touch()
     path_3.write_text("sample text - Lorem ipsum dolor sit amet, consectetur adipiscing elit.")
 
     # Fourth level
     path_4 = (
-        tmp_path
+        tmp_path  # type: ignore
         / "test_dir_0"
         / "test_dir_0_0"
         / "test_dir_0_0_0"
@@ -61,12 +61,12 @@ def filesystem_fixture_0(tmp_path) -> str:
     path_4.touch()
     path_4.write_text("sample text - Lorem ipsum dolor sit amet, consectetur adipiscing elit.")
 
-    sym_dir = tmp_path / "test_dir_1" / "test_symlink_dir"
-    sym_file = tmp_path / "test_dir_1" / "test_file_1_0" / "test_symlink_file"
+    sym_dir = tmp_path / "test_dir_1" / "test_symlink_dir"  # type: ignore
+    sym_file = tmp_path / "test_dir_1" / "test_file_1_0" / "test_symlink_file"  # type: ignore
     if not os.path.exists(sym_dir):
-        os.symlink(tmp_path / "test_dir_1", tmp_path / "test_symlink_dir")
+        os.symlink(tmp_path / "test_dir_1", tmp_path / "test_symlink_dir")  # type: ignore
     if not os.path.exists(sym_file):
-        os.symlink(tmp_path / "test_dir_1" / "test_file_1_0", tmp_path / "test_symlink_file")
+        os.symlink(tmp_path / "test_dir_1" / "test_file_1_0", tmp_path / "test_symlink_file")  # type: ignore
 
     return tmp_path
 
@@ -104,7 +104,7 @@ def test_is_directory_writable_1(tmp_path: pytest.TempPathFactory) -> None:
 def test_get_metadata(filesystem_fixture_0: str) -> None:
     """Test get_metadata function"""
     # Generate file structure
-    path_0 = filesystem_fixture_0 / "test_dir_0" / "test_file_0_0"
+    path_0 = filesystem_fixture_0 / "test_dir_0" / "test_file_0_0"  # type: ignore
 
     # Set path variables
     file_name = os.path.basename(path_0)
@@ -189,7 +189,7 @@ def test_find_directory_content_0(filesystem_fixture_0: str) -> None:
     """Test find_directory_content for files"""
     # Find files
     files = module_0.find_directory_content(
-        filesystem_fixture_0 / "test_dir_0", depth=1, exclude_directories=True
+        filesystem_fixture_0 / "test_dir_0", depth=1, exclude_directories=True  # type: ignore
     )
     assert len(files) == 1
     assert files[0]["name"] == "test_file_0_0"
@@ -200,7 +200,7 @@ def test_find_directory_content_1(filesystem_fixture_0: str) -> None:
     """Test find_directory_content for directories"""
     # Find directories
     files = module_0.find_directory_content(
-        filesystem_fixture_0 / "test_dir_0", depth=1, exclude_files=True
+        filesystem_fixture_0 / "test_dir_0", depth=1, exclude_files=True  # type: ignore
     )
     assert len(files) == 1
     assert files[0]["name"] == "test_dir_0_0"
@@ -208,14 +208,14 @@ def test_find_directory_content_1(filesystem_fixture_0: str) -> None:
 
     # Find nothing
     files = module_0.find_directory_content(
-        filesystem_fixture_0 / "test_dir_0", depth=1, exclude_files=True, exclude_directories=True
+        filesystem_fixture_0 / "test_dir_0", depth=1, exclude_files=True, exclude_directories=True  # type: ignore
     )
     assert len(files) == 0
 
 
 def test_find_directory_content_2(filesystem_fixture_0: str) -> None:
     """Test find_directory_content for files and directories"""
-    files = module_0.find_directory_content(filesystem_fixture_0 / "test_dir_0", depth=1)
+    files = module_0.find_directory_content(filesystem_fixture_0 / "test_dir_0", depth=1)  # type: ignore
     assert len(files) == 2
     assert files[0]["name"] != files[1]["name"]
     for file in files:

@@ -11,12 +11,13 @@ import pywrapid.config.exceptions as module_1
 
 cwd = pathlib.Path().resolve()
 
+
 # pylint: disable=redefined-outer-name
 @pytest.fixture()
-def fixture_yaml_file_0(tmp_path) -> str:
+def fixture_yaml_file_0(tmp_path: str) -> str:
     """Fixture for producing sample yaml config file"""
     # Top level
-    path_0 = tmp_path / "sample.yml"
+    path_0 = tmp_path / "sample.yml"  # type: ignore
     path_0.touch()
     path_0.write_text(
         """a: "aaa"
@@ -33,10 +34,10 @@ e:
 
 
 @pytest.fixture()
-def fixture_yaml_file_1(tmp_path) -> str:
+def fixture_yaml_file_1(tmp_path: str) -> str:
     """Fixture for producing sample yaml config file"""
     # Top level
-    path_0 = tmp_path / "sample.yml"
+    path_0 = tmp_path / "sample.yml"  # type: ignore
     path_0.touch()
     path_0.write_text(
         """I am
@@ -117,7 +118,7 @@ def test_config_wrapidconfig_9() -> None:
         module_0.ConfigSubSection(wrapid_config_0)
 
 
-def test_config_wrapidconfig_10(fixture_yaml_file_0) -> None:
+def test_config_wrapidconfig_10(fixture_yaml_file_0: str) -> None:
     """Valid application config for wrapidconfig"""
     wrapid_config_0 = module_0.ApplicationConfig(
         "tmp", config_path=fixture_yaml_file_0, allow_config_discovery=False
