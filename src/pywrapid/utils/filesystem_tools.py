@@ -146,7 +146,7 @@ def get_metadata(path: str) -> dict:
     return metadata
 
 
-def _special_sort(data: dict, order_by: str, order: str) -> list[dict]:
+def _special_sort(data: list, order_by: str, order: str) -> list[dict]:
     """Internal function to sort filesystem meta data by special keys.
 
     Args:
