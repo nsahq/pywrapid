@@ -226,7 +226,7 @@ class ApplicationConfig(WrapidConfig):
             dict: Configuration settings
         """
         if not is_file_readable(config):
-            raise ConfigurationFileNotFoundError
+            raise ConfigurationFileNotFoundError(f"Readable configuration file not found: {config}")
 
         if not expected_keys:
             expected_keys = []
@@ -236,17 +236,13 @@ class ApplicationConfig(WrapidConfig):
         try:
             with open(config, "r", encoding="utf-8-sig") as file:
                 cfg = yaml.safe_load(file)
-
+            if not isinstance(cfg, dict):
+                raise ConfigurationValidationError(f"YAML parsing error for {config}")
             if expected_keys != []:
                 self.validate_keys(expected_keys, allow_empty)
 
-        except FileNotFoundError as error:
-            raise ConfigurationFileNotFoundError(
-                f"Configuration file not found: {config}") from error
-        except ValueError as error:
-            raise ConfigurationError(f"Configuration value error for {config}: {error}") from error
-        except Exception as error:
-            raise ConfigurationError(f"File error for {config}: {error}") from error
+        except ConfigurationValidationError as error:
+            raise ConfigurationValidationError(f"Loading of config failed: {error}") from error
 
         return cfg
 
