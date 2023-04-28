@@ -323,7 +323,120 @@ def test_find_directory_content_8(filesystem_fixture_0: str) -> None:
             assert "symlink" in file
 
 
+# Test find_directory_content order by name, size, and type
+def test_find_directory_content_9(filesystem_fixture_0: str) -> None:
+    """Test find_directory_content order by name"""
+    files = module_0.find_directory_content(
+        filesystem_fixture_0, depth=1, order_by="name", order="asc"
+    )
+
+    assert len(files) == 6
+    assert files[0]["name"] == "test_dir_0"
+    assert files[1]["name"] == "test_dir_1"
+    assert files[2]["name"] == "test_file_0"
+    assert files[3]["name"] == "test_file_1"
+    assert files[4]["name"] == "test_symlink_dir"
+    assert files[5]["name"] == "test_symlink_file"
+
+
+def test_find_directory_content_10(filesystem_fixture_0: str) -> None:
+    """Test find_directory_content order by name, ascending"""
+    files = module_0.find_directory_content(
+        filesystem_fixture_0, depth=1, order_by="path", order="asc"
+    )
+
+    assert len(files) == 6
+    assert files[0]["name"] == "test_dir_0"
+    assert files[1]["name"] == "test_dir_1"
+    assert files[2]["name"] == "test_file_0"
+    assert files[3]["name"] == "test_file_1"
+    assert files[4]["name"] == "test_symlink_dir"
+    assert files[5]["name"] == "test_symlink_file"
+
+
 def test_find_directory_content_exceptions_0() -> None:
     """Test find_directory_content exceptions"""
     with pytest.raises(OSError):
         module_0.find_directory_content("not_real_path")
+
+
+def test_filesystem_tools__special_sort_0() -> None:
+    """Test _special_sort function."""
+    data = [
+        {
+            "name": "file_1",
+            "path": "/tmp/dir1/file_1",
+            "size": 100,
+            "type": "file",
+        },
+        {
+            "name": "file_2",
+            "path": "/tmp/dir1/dir2/file_2",
+            "size": 200,
+            "type": "file",
+        },
+        {
+            "name": "file_3",
+            "path": "/tmp/dir1/dir2/dir3/file_3",
+            "size": 300,
+            "type": "file",
+        },
+    ]
+    keys = ["name", "path", "size", "type"]
+
+    for key in keys:
+        result = module_0.filesystem_tools._special_sort(data, key, "asc")
+        assert result == data if key not in ["path", "type"] else list(reversed(data))
+
+        result = module_0.filesystem_tools._special_sort(data, key, "desc")
+        assert result == list(reversed(data)) if key not in ["path", "type"] else data
+
+    # Test for invalid key
+    with pytest.raises(ValueError):
+        module_0.filesystem_tools._special_sort(data, "invalid_key", "asc")
+
+    # Test for invalid order
+    with pytest.raises(ValueError):
+        module_0.filesystem_tools._special_sort(data, "name", "invalid_order")
+
+
+def test_filesystem_tools__special_sort_1() -> None:
+    """Test _special_sort function."""
+    data = [
+        {
+            "name": "file_1",
+            "path": "/tmp/dir1/file_1",
+            "size": 100,
+            "type": "file",
+        },
+        {
+            "name": "dir_1",
+            "path": "/tmp/dir1",
+            "type": "file",
+            "mount_point": False,
+        },
+        {
+            "name": "symlink_1",
+            "path": "/tmp/dir1/symlink_1",
+            "size": 300,
+            "type": "file",
+            "symlink": "/tmp/dir1/file_1",
+        },
+    ]
+
+    keys = ["name", "path", "type"]
+
+    for key in keys:
+        result = module_0.filesystem_tools._special_sort(data, key, "asc")
+        assert result == data
+
+        result = module_0.filesystem_tools._special_sort(data, key, "desc")
+        assert result == list(reversed(data))
+
+    # Test for invalid key
+    with pytest.raises(ValueError):
+        module_0.filesystem_tools._special_sort(data, "invalid_key", "asc")
+
+    # Test for invalid order
+    with pytest.raises(ValueError):
+        module_0.filesystem_tools._special_sort(data, "name", "invalid_order")
