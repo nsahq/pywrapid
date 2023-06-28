@@ -18,6 +18,7 @@ __email__ = "jonas[dot]werme[at]nsahq[dot]se"
 __status__ = "Prototype"
 
 import logging
+from logging.handlers import SysLogHandler
 from typing import Type, Union
 
 from pywrapid.config import WrapidConfig
@@ -49,6 +50,11 @@ def _generate_default(cfg: dict) -> dict:
             "format": "%(asctime)-15s [%(levelname)s] (%(name)s) %(message)s",
             "level": logging.INFO,
             "location": "",
+        },
+        "syslog": {
+            "format": "%(asctime)-15s [%(levelname)s] (%(name)s) %(message)s",
+            "level": 0,
+            "location": "/dev/log",
         },
     }
 
@@ -96,7 +102,7 @@ def application_logging(config: Union[Type[WrapidConfig], dict]) -> None:
         # if log.hasHandlers():
         #     continue
         cfg[module] = dict_merge(default, cfg[module]) if cfg[module] is not None else default
-        for log_type in ["console", "file"]:
+        for log_type in ["console", "file", "syslog"]:
             formatter = logging.Formatter(cfg[module].get("format", default[log_type]["format"]))
             level = cfg[module][log_type].get("level", default[log_type]["level"])
 
@@ -111,6 +117,12 @@ def application_logging(config: Union[Type[WrapidConfig], dict]) -> None:
                 handler = logging.FileHandler(
                     cfg[module].get("location", default[log_type]["location"])
                 )
+            elif log_type == "syslog":
+                handler = SysLogHandler(
+                    facility=SysLogHandler.LOG_DAEMON,
+                    address=cfg[module].get("location", default[log_type]["location"]),
+                )
+
             handler.setLevel(level)
             handler.setFormatter(formatter)
             log.addHandler(handler)

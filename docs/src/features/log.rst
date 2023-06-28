@@ -131,6 +131,10 @@ If you have the logging section in your config file and decide not to override d
         format: "%(asctime)-15s [%(levelname)s] (%(name)s) %(message)s"
         level: logging.INFO
         location: ""
+    syslog:
+        format: "%(asctime)-15s [%(levelname)s] (%(name)s) %(message)s"
+        level: 0
+        location: "/dev/log"
 
 
 File logging
@@ -147,10 +151,22 @@ If a location is not set either in default or as a module specific setting, the 
 
 Console logging
 ---------------
-Console logging section of each module allows you to set the messages for logg level that should be written to standard out/standard err.
+Console logging section of each module allows you to set the messages for log level that should be written to standard out/standard err.
 
 Journal (systemd) can usually capture this type of output when the application is run as a service.
-Journal can also be configured to print captured output to syslog.
+
+
+
+System logging
+--------------
+Syslog section of each module allows you to set the messages for log level that should be written to the syslog of your system.
+
+Journald (systemd) or rsyslog remote logging usually requires you to configure file logging using syslog as the capturing location.
+Journald can also be configured to print captured output to syslog.
+
+rsyslog or other tool that listens to syslog events can be configured to split to single log file if direct file logging is not desired.
+It also allows you to do log parsing and remote logging using specific configuration files in /etc/rsyslog.d/ as per standard practises.
+
 
 
 Log format
