@@ -135,6 +135,7 @@ If you have the logging section in your config file and decide not to override d
         format: "%(asctime)-15s [%(levelname)s] (%(name)s) %(message)s"
         level: 0
         location: "/dev/log"
+        ident: "pywrapid-default-ident"
 
 
 File logging
@@ -167,6 +168,9 @@ Journald can also be configured to print captured output to syslog.
 rsyslog or other tool that listens to syslog events can be configured to split to single log file if direct file logging is not desired.
 It also allows you to do log parsing and remote logging using specific configuration files in /etc/rsyslog.d/ as per standard practises.
 
+ident value will set the application name to be used in the syslog facility.
+Set this to your desired application name to make sure you can identify the logs properly.
+Set it to empty string to not enforce application name. In the case of journald this will yield journal[pid] as your application name.
 
 
 Log format

@@ -55,6 +55,7 @@ def _generate_default(cfg: dict) -> dict:
             "format": "%(asctime)-15s [%(levelname)s] (%(name)s) %(message)s",
             "level": 0,
             "location": "/dev/log",
+            "ident": "pywrapid-default-ident",
         },
     }
 
@@ -122,6 +123,10 @@ def application_logging(config: Union[Type[WrapidConfig], dict]) -> None:
                     facility=SysLogHandler.LOG_DAEMON,
                     address=cfg[module].get("location", default[log_type]["location"]),
                 )
+                ident = cfg[module].get("ident", default[log_type]["ident"])
+
+                if ident:
+                    handler.ident = ident
 
             handler.setLevel(level)
             handler.setFormatter(formatter)
