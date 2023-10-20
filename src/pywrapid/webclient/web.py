@@ -219,6 +219,60 @@ class X509Credentials(WebCredentials):
 
         self._options = {"cert": (self.cert_file, self.key_file)}
 
+
+class OAuth2Credentials(WebCredentials):
+    """Credential class for OAauth2 authentication"""
+
+    def __init__(  # pylint: disable=unused-argument, too-many-arguments
+        self,
+        login_url: str = "",
+        token_url: str = "",
+        redirect_uri: str = "",
+        auth_data: dict | None = None,
+        legacy_auth: BasicAuthCredentials | None = None,
+        refresh_token_timeout: int = 0,
+        access_token_timeout: int = 0,
+        token_expiry_offset: int = 0,
+        config: Union[Type[WrapidConfig], dict, None] = None,
+        **kwargs: dict[str, Any],
+    ) -> None:
+        # self.import_dependencies(["requests_oauthlib"])
+        wrapid_config = self._unify_configuration({**locals(), **kwargs}, config)
+        super().__init__()
+
+        required_keys = ["login_url", "auth_data"]
+
+        self._config = dict(wrapid_config.cfg)
+
+        for url in ["login_url", "token_url", "redirect_uri"]:
+            use_url = ""
+            if url in self._config:
+                self.validate_url(url)
+                use_url = str(self._config.get(url))
+                if url not in required_keys:
+                    required_keys.append(url)
+            setattr(self, url, use_url)
+
+        wrapid_config.validate_keys(required_keys)
+
+        self.legacy_auth = self._config.get("legacy_auth", None)
+
+        log.debug(
+            "Loading OAuth2 web credentials: login_url=%s, "
+            "token_url=%s, redirect_uri=%s, legacy_auth=%s",
+            self.login_url,  # type: ignore # pylint: disable=no-member
+            self.token_url,  # type: ignore # pylint: disable=no-member
+            self.redirect_uri,  # type: ignore # pylint: disable=no-member
+            bool(self.legacy_auth),
+        )
+
+        if legacy_auth:
+            self._options = self._config["legacy_auth"]._options
+
+        self._options["headers"] = {"Content-Type": "application/x-www-form-urlencoded"}
+        self.credential_body = self._config.pop("auth_data")
+
+
     """Web Client base
 
     Generic web client class as base for creating application specific clients
