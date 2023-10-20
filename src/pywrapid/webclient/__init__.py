@@ -21,6 +21,7 @@ from .exceptions import (
 from .web import (
     AuthorizationType,
     BasicAuthCredentials,
+    OAuth2Credentials,
     WebClient,
     WebCredentials,
     X509Credentials,
