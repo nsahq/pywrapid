@@ -3,6 +3,22 @@ Pywrapid Webclient
 ******************
 Documentation coming soon
 
+Configuration
+-------------
+
+Client settings:
+client_options: request options such as ssl settings, timeout etc.
+
+Token settings:
+refresh_token_timeout: Time the auth provider specifies for refresh token expiry in seconds <default: 86400>
+access_token_timeout: The time for access token expiry in seconds, omit or set to 0 to use response body values from auth provider <default: 0>
+token_expiry_offset: Seconds before expiration time we will treat tokens as already expired to trigger early renewal <default: 10>
+access_token_header: Custom response header name to look for access token after authentication <default: ''>
+
+Any additional configuration parameter passed in will be included in the credential objects config.
+Same goes for any extra key value pair passed as parameter at instantiation.
+
+
 Webclient
 ---------
 
