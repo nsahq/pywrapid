@@ -28,7 +28,7 @@ from urllib.parse import urlparse
 import jwt
 from requests import HTTPError, RequestException, Response, Timeout, TooManyRedirects, request
 
-from pywrapid.config import WrapidConfig
+from pywrapid.config import ConfigSubSection, WrapidConfig
 from pywrapid.utils import is_file_readable
 
 from .exceptions import (
@@ -273,6 +273,7 @@ class OAuth2Credentials(WebCredentials):
         self.credential_body = self._config.pop("auth_data")
 
 
+class WebClient:  # pylint: disable=too-many-instance-attributes, too-many-arguments
     """Web Client base
 
     Generic web client class as base for creating application specific clients
@@ -334,10 +335,17 @@ class OAuth2Credentials(WebCredentials):
         self._authorization_type = authorization_type
 
         if credentials:
-            self._credential_options: dict = dict(**credentials.options)  #  pylint: disable=R1735
-            self._login_url = str(credentials.login_url)
-        self._authorization_expiry = datetime.now()
+            self._credential_options: dict = {**credentials.options}  # type: ignore[dict-item]
+            self._login_url = credentials.config.get("login_url", "")  # type: ignore[attr-defined]
+            self._credential_config = credentials.config
+            if isinstance(credentials, OAuth2Credentials):
+                self._credential_body: dict = credentials.credential_body
+            else:
+                self._credential_body = {}
+        self._access_token_expiry = datetime.now()
+        self._refresh_token_expiry = datetime.now()
         self._access_token = ""  # nosec
+        self._refresh_token = ""  # nosec
 
         try:
             AuthorizationType(authorization_type).name
@@ -346,7 +354,7 @@ class OAuth2Credentials(WebCredentials):
         log.debug(
             "Initiating new client with authorization type %s and credential type %s",
             AuthorizationType(authorization_type).name,
-            type(credentials),
+            type(credentials).__name__,
         )
 
     def _unpack_jwt(self, token: str) -> dict:
@@ -360,16 +368,13 @@ class OAuth2Credentials(WebCredentials):
         Returns:
             dict: Unpacked JWT token
         """
-        # Following 4 lines can be simplified with token.removeprefix("Bearer ")
-        # for python version > 3.9
-        # Keeping for backwards compatibillity for now
-        bearer = "Bearer "
-        jwt_token = token
+        additionals = {}
+        if self._credential_options.get("jwt_secret", None):
+            additionals["key"] = self._config["jwt_secret"]
+        if self._credential_options.get("jwt_algorithms", None):
+            additionals["algorithms"] = self._credential_options.get("jwt_algorithms")
 
-        if token.startswith(bearer):
-            jwt_token = token[len(bearer) :]
-
-        return jwt.decode(jwt_token, options={"verify_signature": False})
+        return jwt.decode(token, options={"verify_signature": False}, **additionals)
 
     def session_expired(self) -> bool:
         """Check if our session has expired
@@ -377,13 +382,13 @@ class OAuth2Credentials(WebCredentials):
         Returns:
             bool: True if token is expired, False if still valid
         """
-        if not self._authorization_expiry or not self._access_token:
+        if not self._access_token_expiry or not self._access_token:
             return True
 
         time_offset = datetime.now() + timedelta(
-            seconds=10
+            seconds=self._config.get("token_expiry_offset", 10)
         )  # Offset to avoid ms/ns race condition
-        if time_offset < self._authorization_expiry:
+        if time_offset < self._access_token_expiry:
             return False
 
         return True
@@ -397,6 +402,9 @@ class OAuth2Credentials(WebCredentials):
         Raises:
             ClientAuthenticationError
         """
+        if self._credential_body:
+            options["data"] = self._credential_body
+
         response = self.call(
             method,
             str(self._login_url),
@@ -415,23 +423,88 @@ class OAuth2Credentials(WebCredentials):
             raise ClientAuthenticationError(
                 f"Unable to generate new session: [{response.status_code}] {response.content!r}"
             )
+
+        self._parse_authentication_data(response)
+
+    def _parse_authentication_data(  # pylint: disable=too-many-branches
+        self, response: Response
+    ) -> None:
+        # Custom headers or custom bodies are common locations of bearer tokens.
+        # We need to make this more dynamic later. Adding response Authorization header
+        # and a few more for now
+        # Typically used for custom x509 auth but also common for basic auth and custom
+        # implementations
         if "Authorization" in response.headers:
-            self._access_token = response.headers["Authorization"]
+            self._set_access_token(response.headers["Authorization"])
 
-        if self._authorization_type == AuthorizationType.JWT:
-            unix_now = time()
-            jwt_data = self._unpack_jwt(self._access_token)
-            log.debug("JWT data: %s", jwt_data)
+        # Custom configured header
+        if self._config.get("access_token_header", ""):
+            if self._config["access_token_header"] in response.headers:
+                self._set_access_token(response.headers[self._config["access_token_header"]])
+            else:
+                log.error(
+                    "Unable to find access token header %s in response headers: %s",
+                    self._config["access_token_header"],
+                    response.headers,
+                )
+                raise ClientAuthenticationError("Unable to find configured access token header")
 
-            for exp in ["expiresIn", "exp", "expires_in", "expires"]:
-                if exp in jwt_data:
-                    if jwt_data[exp] < 44640:  # Handle poor expiry implementations with offset
-                        self._authorization_expiry = datetime.fromtimestamp(
-                            unix_now + jwt_data[exp]
-                        )
+        # Manage JWT data extraction
+        if self._authorization_type == AuthorizationType.OAUTH2:
+            try:
+                auth_response_data = response.json()
+                # Oauth2 implementations differ vastly. Some gives only access_tokens,
+                # some give both at authentication, some give both at every refresh
+                # some give only refresh_tokens for offline scopes. Spliting ifs to handle all.
+                if "access_token" in auth_response_data:
+                    self._set_access_token(auth_response_data["access_token"])
+                    if self._config.get("access_token_timeout", 0) == 0:
+                        expiry = time() + auth_response_data.get("expires_in")
                     else:
-                        self._authorization_expiry = datetime.fromtimestamp(jwt_data[exp])
-            log.debug("Authorization expiry time set to: %s", self._authorization_expiry)
+                        expiry = time() + self._config.get("access_token_timeout", 0)
+
+                    self._set_access_token_expiry(expiry)
+
+                if "refresh_token" in auth_response_data:
+                    self._set_refresh_token(auth_response_data["refresh_token"])
+                    expiry = time() + self._config.get("refresh_token_timeout", 84600)
+                    self._set_refresh_token_expiry(expiry)
+
+            except ValueError as error:
+                raise ClientAuthenticationError(error) from error
+            except Exception as error:
+                raise ClientAuthenticationError(error) from error
+
+        if self._authorization_type in [
+            AuthorizationType.JWT,
+            AuthorizationType.BEARER,
+        ]:
+            self._set_access_token_expiry(self._get_jwt_expiry(self._access_token))
+            if self._access_token_expiry < datetime.now():
+                raise ClientAuthorizationError("JWT Access token expired or could not be set")
+
+    def _get_jwt_expiry(self, token: str) -> float:
+        """Get JWT token expiry time
+
+        Args:
+            token (str): JWT token
+
+        Returns:
+            float: Expiry time as unix timestamp
+        """
+        jwt_data = self._unpack_jwt(token)
+        log.debug("JWT data: %s", jwt_data)
+        expiry = time()
+
+        for exp in ["exp", "expiresIn", "expires_in", "expires"]:  # standard = exp
+            if exp in jwt_data:
+                if jwt_data[exp] < 44640:  # Handle poor expiry implementations with offset
+                    expiry = expiry + jwt_data[exp]
+                else:
+                    expiry = jwt_data[exp]
+                break
+
+        return expiry
 
     # flake8: noqa: C901
     def call(
@@ -468,16 +541,17 @@ class OAuth2Credentials(WebCredentials):
             options = {**options, **self._credential_options}
 
         if "headers" not in options:
-            options["headers"] = {"Authorization": self._access_token}
+            options["headers"] = {"Authorization": f"Bearer {self._access_token}"}
         elif (
             "Authorization" not in options["headers"]
             and self._authorization_type != AuthorizationType.NONE
         ):
-            options["headers"] = {"Authorization": self._access_token, **options["headers"]}
-
+            options["headers"] = {
+                "Authorization": f"Bearer {self._access_token}",
+                **options["headers"],
+            }
         if "client_options" in self.get_config:
             options = {**self.get_config["client_options"], **options}
-
         try:
             response = request(method, url, **options)
 
@@ -502,3 +576,35 @@ class OAuth2Credentials(WebCredentials):
         Returns:
             configuration {dict}  -- Dict representation of configuration"""
         return self._config
+
+    def _set_refresh_token(self, refresh_token: str) -> None:
+        """Set refresh token"""
+        self._refresh_token = refresh_token
+
+        log.debug("Refresh token set to: %s", self._refresh_token)
+
+    def _set_refresh_token_expiry(self, refresh_expiry: float) -> None:
+        """Set refresh token expiry time"""
+        self._refresh_token_expiry = datetime.fromtimestamp(refresh_expiry)
+
+        log.debug("Refresh token expiry set to: %s", self._refresh_token_expiry)
+
+    def _set_access_token(self, access_token: str) -> None:
+        """Set access token"""
+        # Following 4 lines can be simplified with token.removeprefix("Bearer ")
+        # for python version > 3.9
+        # Keeping for backwards compatibillity for now
+        bearer = "Bearer "
+
+        if access_token.startswith(bearer):
+            access_token = access_token[len(bearer) :]
+
+        self._access_token = access_token
+
+        log.debug("Access token set to: %s", self._access_token)
+
+    def _set_access_token_expiry(self, access_expiry: float) -> None:
+        """Set access token expiry time"""
+        self._access_token_expiry = datetime.fromtimestamp(access_expiry)
+
+        log.debug("Access token expiry set to: %s", self._access_token_expiry)
