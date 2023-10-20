@@ -223,7 +223,7 @@ class X509Credentials(WebCredentials):
 class OAuth2Credentials(WebCredentials):
     """Credential class for OAauth2 authentication"""
 
-    def __init__(  # pylint: disable=unused-argument, too-many-arguments
+    def __init__(  # pylint: disable=unused-argument, too-many-arguments  # nosec
         self,
         login_url: str = "",
         token_url: str = "",
