@@ -6,6 +6,7 @@ import os
 
 import pytest
 
+import pywrapid.config.exceptions as module_2
 import pywrapid.webclient.exceptions as module_1
 import pywrapid.webclient.web as module_0
 
@@ -15,8 +16,7 @@ import pywrapid.webclient.web as module_0
 
 def test_case_0() -> None:
     """Built ins"""
-    str_0 = "FHv,N~>mM"
-    web_credentials_0 = module_0.WebCredentials(str_0)
+    web_credentials_0 = module_0.WebCredentials()
     assert (
         f"{type(web_credentials_0).__module__}.{type(web_credentials_0).__qualname__}"
         == "pywrapid.webclient.web.WebCredentials"
@@ -24,10 +24,6 @@ def test_case_0() -> None:
     assert (
         f"{type(module_0.WebCredentials.options).__module__}."
         f"{type(module_0.WebCredentials.options).__qualname__}" == "builtins.property"
-    )
-    assert (
-        f"{type(module_0.WebCredentials.login_url).__module__}."
-        f"{type(module_0.WebCredentials.login_url).__qualname__}" == "builtins.property"
     )
 
 
@@ -41,10 +37,6 @@ def test_case_1() -> None:
     assert (
         f"{type(module_0.WebCredentials.options).__module__}."
         f"{type(module_0.WebCredentials.options).__qualname__}" == "builtins.property"
-    )
-    assert (
-        f"{type(module_0.WebCredentials.login_url).__module__}."
-        f"{type(module_0.WebCredentials.login_url).__qualname__}" == "builtins.property"
     )
 
 
@@ -97,10 +89,7 @@ def test_case_6() -> None:
         f"{type(module_0.WebCredentials.options).__module__}."
         f"{type(module_0.WebCredentials.options).__qualname__}" == "builtins.property"
     )
-    assert (
-        f"{type(module_0.WebCredentials.login_url).__module__}."
-        f"{type(module_0.WebCredentials.login_url).__qualname__}" == "builtins.property"
-    )
+
     web_credentials_1 = module_0.WebCredentials()
     module_0.WebClient(credentials=web_credentials_1, dict_config={})
 
@@ -179,17 +168,14 @@ def test_case_12() -> None:
         f"{type(module_0.WebCredentials.options).__module__}."
         f"{type(module_0.WebCredentials.options).__qualname__}" == "builtins.property"
     )
-    assert (
-        f"{type(module_0.WebCredentials.login_url).__module__}."
-        f"{type(module_0.WebCredentials.login_url).__qualname__}" == "builtins.property"
-    )
+
     module_0.WebClient(credentials=web_credentials_0)
 
 
 def test_case_13() -> None:
     """x509 Cert error"""
     str_0 = "\x0bs^#DH"
-    with pytest.raises(module_1.CredentialError):
+    with pytest.raises(module_2.ConfigurationValidationError):
         module_0.X509Credentials(str_0, str_0)
 
 
