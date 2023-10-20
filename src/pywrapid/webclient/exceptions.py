@@ -21,13 +21,15 @@ CredentialError
 # __email__ = "jonas[dot]werme[at]hoofbite[dot]com"
 # __status__ = "Prototype"
 
+from pywrapid.utils.exceptions import PywrapidError, PywrapidException
+
 
 # Client
-class ClientException(Exception):
+class ClientException(PywrapidException):
     """Base Client Exception"""
 
 
-class ClientError(ClientException):
+class ClientError(PywrapidError):
     """Client Error Exception"""
 
 
@@ -60,11 +62,11 @@ class ClientURLError(ClientError):
 
 
 # Credentials
-class CredentialException(Exception):
+class CredentialException(PywrapidException):
     """Credential Certificate Error Exception"""
 
 
-class CredentialError(CredentialException):
+class CredentialError(PywrapidError):
     """Credential Certificate Error Exception"""
 
 
