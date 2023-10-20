@@ -57,30 +57,6 @@ class AuthorizationType(Enum):
     OAUTH2 = 4
 
 
-# class Authorization():
-#     """Base class for authorization"""
-
-#     def __init__(self, auth_header="") -> None:
-#         """Fix me"""
-#         self.authorization_header = auth_header
-
-
-# class BearerAuthorization(Authorization):
-#     """Bearer auth is used in requests"""
-
-#     def __init__(self, login_url: str = "") -> None:
-#         """Fix me"""
-#         super().__init__("Bearer")
-
-
-# class BasicAuthorization(Authorization):
-#     """Basic Auth is used in request"""
-
-#     def __init__(self) -> None:
-#         """Fix me"""
-#         super().__init__("Basic")
-
-
 class WebCredentials:
     """Credential base class"""
 
