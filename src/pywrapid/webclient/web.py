@@ -60,13 +60,11 @@ class AuthorizationType(Enum):
 class WebCredentials:
     """Credential base class"""
 
-    def __init__(self, login_url: str = "") -> None:
+    def __init__(self) -> None:
         """Init class for web credentials"""
-        if login_url and not urlparse(login_url):
-            log.debug("Login URL validation failed for URL:  %s", login_url)
-            raise CredentialURLError("Validation failed for login URL")
-        self._login_url = login_url
         self._options: dict = {}
+        self._config: dict = {}
+        self.type = type(self).__name__
 
     @property
     def options(self) -> dict:
@@ -74,9 +72,84 @@ class WebCredentials:
         return self._options
 
     @property
-    def login_url(self) -> str:
-        """Getter for login url"""
-        return str(self._login_url)
+    def config(self) -> dict:
+        """Getter for options"""
+        return self._config
+
+    def _unify_configuration(
+        self, params: dict, config: Union[Type[WrapidConfig], dict, None]
+    ) -> ConfigSubSection:
+        """Unify params and config values
+
+        Produces wrapid config (ConfigSubSection) object after validating standard stuff.
+
+        Args:
+            params (dict): Configuration parameters, e.g. locals()
+            config (WrapidConfig|dict): Configuration object, dict or None
+        """
+        params = {
+            k: v
+            for k, v in params.items()
+            if k != "self" and k != "kwargs" and k != "config" and k != "__class__" and v
+        }
+
+        if params and config:
+            raise CredentialError(
+                "Multiple configuration options used, "
+                "use a WrapidConfig derivative/dict OR passed parameters"
+            )
+
+        if params:
+            config = params
+
+        if isinstance(config, dict):
+            config = ConfigSubSection({"dummy_key": config}, "dummy_key")  # type: ignore
+
+        if config and isinstance(config, WrapidConfig):
+            return config
+
+        raise CredentialError(
+            "Config pratameter must be of type dict or a WrapidConfig derivative"
+        )
+
+    # def import_dependencies(self, dependencies: list) -> bool:
+    #     """Import dependencies for credential type"""
+    #     missing_dependencies = []
+    #     for dependency in dependencies:
+    #         if not is_module_available(dependency):
+    #             log.error("Dependency %s is not available", dependency)
+    #             missing_dependencies.append(dependency)
+    #             continue
+    #         if not is_module_already_imported(dependency):
+    #             setattr(self, dependency, import_module(dependency))
+
+    #     if missing_dependencies:
+    #         raise DependencyError(f"Missing credential dependencies: {missing_dependencies}")
+
+    #     log.debug("All credential dependencies (%s) are available", dependencies)
+
+    #     return True
+
+    def validate_url(self, url: str = "", raise_on_fail: bool = False) -> bool:
+        """Validate URL strings
+
+        Args:
+            url (str, optional): The URL to validate. Defaults to "".
+            raise_on_fail (bool, optional): Raise error if validation fails. Defaults to False.
+
+        Raises:
+            CredentialURLError: _description_
+
+        Returns:
+            bool: _description_
+        """
+        if not url or not urlparse(url):
+            log.error("URL validation failed for URL:  %s", self._config[url])
+            if raise_on_fail:
+                raise CredentialURLError("Validation failed for URL")
+            return False
+
+        return True
 
 
 class BasicAuthCredentials(WebCredentials):
