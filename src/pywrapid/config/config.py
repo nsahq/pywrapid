@@ -156,7 +156,6 @@ class WrapidConfig:
 
             p_loc = os.path.abspath(str(location))
             if is_file_readable(p_loc):
-
                 return str(p_loc)
 
         raise ConfigurationFileNotFoundError("Unable to locate configuration file location")
@@ -226,7 +225,9 @@ class ApplicationConfig(WrapidConfig):
             dict: Configuration settings
         """
         if not is_file_readable(config):
-            raise ConfigurationFileNotFoundError(f"Readable configuration file not found: {config}")
+            raise ConfigurationFileNotFoundError(
+                f"Readable configuration file not found: {config}"
+            )
 
         if not expected_keys:
             expected_keys = []
