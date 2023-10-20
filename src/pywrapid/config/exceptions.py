@@ -17,12 +17,14 @@ ConfigurationError
 # __email__ = "jonas[dot]werme[at]hoofbite[dot]com"
 # __status__ = "Prototype"
 
+from pywrapid.utils.exceptions import PywrapidError, PywrapidException
 
-class ConfigurationException(Exception):
+
+class ConfigurationException(PywrapidException):
     """Base Configuration Exception"""
 
 
-class ConfigurationError(ConfigurationException):
+class ConfigurationError(PywrapidError):
     """Configuration Error Exception"""
 
 
