@@ -155,29 +155,24 @@ class WebCredentials:
 class BasicAuthCredentials(WebCredentials):
     """Credential class for basic auth"""
 
-    def __init__(
+    def __init__(  # pylint: disable=unused-argument
         self,
         username: str,
         password: str,
         login_url: str = "",
         config: Union[Type[WrapidConfig], dict, None] = None,
+        **kwargs: dict[str, Any],
     ) -> None:
-        if config and not isinstance(config, WrapidConfig) and not isinstance(config, dict):
-            raise CredentialError(
-                "Config pratameter must be of type dict or a WrapidConfig derivative"
-            )
-        if config and login_url:
-            raise CredentialError(
-                "Multiple configuration options used, WrapidConfig derivative OR passed parameters"
-            )
+        wrapid_config = self._unify_configuration({**locals(), **kwargs}, config)  # type: ignore
+        super().__init__()
 
-        if config and isinstance(config, WrapidConfig):
-            config = dict(config.cfg)
+        required_keys = ["username", "password"]
 
-        if config and isinstance(config, dict):
-            login_url = config.get("login_url", "")
+        wrapid_config.validate_keys(expected_keys=required_keys)  # type: ignore
+        self._config = dict(wrapid_config.cfg)
 
-        super().__init__(login_url=login_url)
+        if "login_url" in self._config:
+            self.validate_url(str(self._config.get("login_url")))
 
         self._options = {"auth": (username, password)}
 
