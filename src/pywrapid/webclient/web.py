@@ -180,53 +180,45 @@ class BasicAuthCredentials(WebCredentials):
 class X509Credentials(WebCredentials):
     """Credential class for x509 auth"""
 
-    def __init__(
+    def __init__(  # pylint: disable=unused-argument, too-many-arguments
         self,
         cert_file: str = "",
         key_file: str = "",
         login_url: str = "",
+        jwt_key: str = "",
+        access_token_timeout: int = 0,
+        token_expiry_offset: int = 0,
         config: Union[Type[WrapidConfig], dict, None] = None,
+        **kwargs: dict[str, Any],
     ) -> None:
-        if config and not isinstance(config, WrapidConfig) and not isinstance(config, dict):
-            raise CredentialError(
-                "Config pratameter must be of type dict or a WrapidConfig derivative"
-            )
-        if config and (cert_file or key_file or login_url):
-            raise CredentialError(
-                "Multiple configuration options used, WrapidConfig derivative OR passed parameters"
-            )
-        if not config and (not cert_file or not key_file or not login_url):
-            raise CredentialError(
-                "key_file, cert_file and login_url paramters must be set or use config object"
-            )
+        wrapid_config = self._unify_configuration({**locals(), **kwargs}, config)
+        super().__init__()
 
-        if config and isinstance(config, WrapidConfig):
-            config = dict(config.cfg)
+        required_keys = ["login_url", "key_file", "cert_file"]
+        wrapid_config.validate_keys(required_keys)
 
-        if config and isinstance(config, dict):
-            cert_file = config.get("cert_file", "")
-            key_file = config.get("key_file", "")
-            login_url = config.get("login_url", "")
+        self._config = dict(wrapid_config.cfg)
+
+        self.cert_file = self._config.get("cert_file", "")
+        self.key_file = self._config.get("key_file", "")
+        self.login_url = self._config.get("login_url", "")
+
+        if not is_file_readable(self.cert_file):
+            log.error("Certificate file validation failed for %s", self.cert_file)
+            raise CredentialCertificateFileError("Certificate file error")
+        if not is_file_readable(self.key_file):
+            log.error("Key file validation failed for %s", self.key_file)
+            raise CredentialKeyFileError("Key file error")
 
         log.debug(
             "Loading x509 web credentials: cert_file=%s, key_file=%s, login_url=%s",
-            cert_file,
-            key_file,
-            login_url,
+            self.cert_file,
+            self.key_file,
+            self.login_url,
         )
 
-        super().__init__(login_url=login_url)
-        if not is_file_readable(cert_file):
-            log.error("Certificate file validation failed for %s", cert_file)
-            raise CredentialCertificateFileError("Certificate file error")
-        if not is_file_readable(key_file):
-            log.error("Key file validation failed for %s", key_file)
-            raise CredentialKeyFileError("Key file error")
+        self._options = {"cert": (self.cert_file, self.key_file)}
 
-        self._options = {"cert": (cert_file, key_file)}
-
-
-class WebClient:
     """Web Client base
 
     Generic web client class as base for creating application specific clients
