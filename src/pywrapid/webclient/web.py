@@ -269,7 +269,6 @@ class OAuth2Credentials(WebCredentials):
         if legacy_auth:
             self._options = self._config["legacy_auth"]._options
 
-        self._options["headers"] = {"Content-Type": "application/x-www-form-urlencoded"}
         self.credential_body = self._config.pop("auth_data")
 
 
@@ -535,21 +534,17 @@ class WebClient:  # pylint: disable=too-many-instance-attributes, too-many-argum
             Response: requests.Response object
         """
         if not skip_authentication and self.session_expired():
-            self.generate_session()
+            self.generate_session(**self._credential_options)
 
-        if "cert" not in options and "auth" not in options:
-            options = {**options, **self._credential_options}
-
-        if "headers" not in options:
-            options["headers"] = {"Authorization": f"Bearer {self._access_token}"}
-        elif (
-            "Authorization" not in options["headers"]
-            and self._authorization_type != AuthorizationType.NONE
-        ):
-            options["headers"] = {
-                "Authorization": f"Bearer {self._access_token}",
-                **options["headers"],
-            }
+        if self._access_token and self._authorization_type != AuthorizationType.NONE:
+            if "headers" not in options:
+                options["headers"] = {"Authorization": f"Bearer {self._access_token}"}
+            else:
+                if "Authorization" not in options["headers"]:
+                    options["headers"] = {
+                        "Authorization": f"Bearer {self._access_token}",
+                        **options["headers"],
+                    }
         if "client_options" in self.get_config:
             options = {**self.get_config["client_options"], **options}
         try:
@@ -557,7 +552,6 @@ class WebClient:  # pylint: disable=too-many-instance-attributes, too-many-argum
 
             if raise_for_status:
                 response.raise_for_status()
-
         except HTTPError as error:
             raise ClientHTTPError(error) from error
         except Timeout as error:
