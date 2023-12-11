@@ -29,14 +29,14 @@ project = "pywrapid"
 copyright = f"2022-{datetime.now().year}, NSAHQ"  # pylint: disable=redefined-builtin
 author = "Jonas Werme"
 
-version = "0.2.0"
-release = "0.2.0"
+version = "0.3.0"
+release = "0.3.0"
 
 # -- General configuration ---------------------------------------------------
 
 extensions = [
     "sphinx.ext.autodoc",
-#    "sphinx_autodoc_typehints",
+    # "sphinx_autodoc_typehints",
     "sphinx.ext.intersphinx",
     "sphinx.ext.napoleon",
     "sphinx.ext.todo",
