@@ -534,7 +534,8 @@ class WebClient:  # pylint: disable=too-many-instance-attributes, too-many-argum
             Response: requests.Response object
         """
         if not skip_authentication and self.session_expired():
-            self.generate_session(**self._credential_options)
+            login_options = {**self._credential_options, **self._config.get("auth_options", {})}
+            self.generate_session(**login_options)
 
         if self._access_token and self._authorization_type != AuthorizationType.NONE:
             if "headers" not in options:
