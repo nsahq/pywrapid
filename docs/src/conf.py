@@ -53,10 +53,8 @@ add_module_names = False
 # -- Options for HTML output -------------------------------------------------
 
 html_theme = "sphinx_rtd_theme"
-html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 html_theme_options = {
     "logo_only": False,
-    "display_version": True,
     # ToC options
     "collapse_navigation": False,
     "sticky_navigation": True,
