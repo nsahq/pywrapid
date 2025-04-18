@@ -1,20 +1,24 @@
-# Required
+# .readthedocs.yaml
 version: 2
 
-# Set the version of Python and other tools you might need
 build:
   os: ubuntu-22.04
   tools:
-    python: "3.11"
-    # You can also specify other tool versions:
-    # nodejs: "19"
-    # rust: "1.64"
-    # golang: "1.19"
+    python: "3.11" # Or your desired Python version
+  jobs:
+    post_checkout:
+      # Fetch all history and tags for setuptools-scm
+      - git fetch --unshallow || git fetch --depth=20000 # Deeper fallback if unshallow fails
+      - git fetch --tags
 
-# Build documentation in the docs/ directory with Sphinx
-sphinx:
-  configuration: docs/src/conf.py
 python:
   install:
+    - requirements: docs/src/requirements.txt
+    # If your project itself needs to be installed for docs:
     - method: pip
       path: .
+      # extra_requirements:
+      #   - docs
+
+sphinx:
+  configuration: docs/src/conf.py
