@@ -7,7 +7,7 @@ version: 2
 build:
   os: ubuntu-22.04
   tools:
-    python: "miniconda3-latest"
+    python: "latest" # Use latest stable CPython
   jobs:
     # Fetch git history for setuptools-scm to determine version
     post_checkout:
