@@ -1,0 +1,49 @@
+name: Linting
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'pyproject.toml'
+      - '.flake8'
+  # Remove pull_request trigger - validate-changes.yml handles this now
+  # Allow this workflow to be called by other workflows
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          # Use the minimum supported Python version for linting
+          # This ensures code is compatible with all supported versions
+          python-version: '3.7'
+          cache: 'pip'
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 pylint mypy black isort
+          pip install -e .[all]
+
+      - name: Run flake8
+        run: flake8 src tests
+      
+      - name: Run pylint
+        run: pylint src tests
+      
+      - name: Run mypy
+        run: mypy src
+      
+      - name: Check formatting with black
+        run: black --check src tests
+      
+      - name: Check import sorting
+        run: isort --check-only --profile black src tests

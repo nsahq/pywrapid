@@ -1,0 +1,152 @@
+name: Validate Changes
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  # This job determines what needs to be tested based on changed files
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+  
+    outputs:
+      src_changes: ${{ steps.filter.outputs.src_changes }}
+      test_changes: ${{ steps.filter.outputs.test_changes }}
+      docs_changes: ${{ steps.filter.outputs.docs_changes }}
+      example_changes: ${{ steps.filter.outputs.example_changes }}
+      config_changes: ${{ steps.filter.outputs.config_changes }}
+      infra_changes: ${{ steps.filter.outputs.infra_changes }}
+    steps:
+      - uses: actions/checkout@v3      
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            src_changes:
+              - 'src/**/*.py'
+            test_changes:
+              - 'tests/**/*.py'
+            docs_changes:
+              - 'docs/**/*'
+              - '**/*.md'
+              - '**/*.rst'
+            example_changes:
+              - 'examples/**/*'
+              - '**/*.yml'
+              - '**/*.yaml'
+              - '**/*.json'
+              - '**/*.ini'
+            config_changes:
+              - 'pyproject.toml'
+              - 'tox.ini'
+              - 'requirements*.txt'
+            infra_changes:
+              - '.github/**/*'
+  # Orchestrate the existing workflows
+  test:
+    name: Tests
+    needs: changes
+    # Always run tests if source or test files change
+    if: ${{ needs.changes.outputs.src_changes == 'true' || needs.changes.outputs.test_changes == 'true' || needs.changes.outputs.config_changes == 'true' }}
+    uses: ./.github/workflows/test.yml
+
+  lint:
+    name: Linting
+    needs: changes
+    # Always run linting if any Python files change
+    if: ${{ needs.changes.outputs.src_changes == 'true' || needs.changes.outputs.test_changes == 'true' }}
+    uses: ./.github/workflows/lint.yml
+  security:
+    name: Security Checks
+    needs: changes
+    # Always run security checks if source code or dependencies change
+    if: ${{ needs.changes.outputs.src_changes == 'true' || needs.changes.outputs.config_changes == 'true' }}
+    uses: ./.github/workflows/security.yml
+    
+  docs:
+    name: Documentation
+    needs: changes
+    # Run docs check if documentation files, source code, examples, or config samples change
+    if: ${{ needs.changes.outputs.docs_changes == 'true' || needs.changes.outputs.src_changes == 'true' || needs.changes.outputs.example_changes == 'true' }}
+    uses: ./.github/workflows/docs.yml
+  
+  # This job runs after all checks are complete to report status and provide feedback on the PR
+  summary:
+    name: Validation Summary
+    runs-on: ubuntu-latest
+    needs: [changes, test, lint, security, docs]
+    if: always()
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v3
+      - name: Create validation summary
+        id: validation-summary
+        run: |
+          summary=""
+          
+          if [[ "${{ contains(needs.*.result, 'failure') }}" == "true" ]]; then
+            summary="### ❌ Validation Failed\n\nSome checks did not pass. Please review the workflow logs for details:\n\n"
+          else
+            summary="### ✅ All Validations Passed\n\nGreat job! All required checks passed.\n\n"
+          fi
+          
+          # Add details about each check
+          [[ "${{ needs.test.result }}" == "success" ]] && test_status="✅ Passed" || test_status="❌ Failed"
+          [[ "${{ needs.lint.result }}" == "success" ]] && lint_status="✅ Passed" || lint_status="❌ Failed"
+          [[ "${{ needs.security.result }}" == "success" ]] && security_status="✅ Passed" || security_status="❌ Failed"
+          [[ "${{ needs.docs.result }}" == "success" ]] && docs_status="✅ Passed" || docs_status="❌ Failed"
+          
+          # Create reason explanations for why checks were run
+          test_reason=""
+          if [[ "${{ needs.changes.outputs.src_changes }}" == "true" ]]; then
+            test_reason="Source code changes"
+          elif [[ "${{ needs.changes.outputs.test_changes }}" == "true" ]]; then
+            test_reason="Test code changes"
+          elif [[ "${{ needs.changes.outputs.config_changes }}" == "true" ]]; then
+            test_reason="Configuration changes"
+          fi
+          
+          docs_reason=""
+          if [[ "${{ needs.changes.outputs.docs_changes }}" == "true" ]]; then
+            docs_reason="Documentation file changes"
+          elif [[ "${{ needs.changes.outputs.src_changes }}" == "true" ]]; then
+            docs_reason="Source code changes (docstrings)"
+          elif [[ "${{ needs.changes.outputs.example_changes }}" == "true" ]]; then
+            docs_reason="Example or configuration sample changes"
+          fi
+          
+          summary+="| Check | Status | Triggered By | Details |\n"
+          summary+="| ----- | ------ | ------------ | ------- |\n"
+          summary+="| Tests | $test_status | $test_reason | [View logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) |\n"
+          summary+="| Linting | $lint_status | ${test_reason:-N/A} | [View logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) |\n"
+          summary+="| Security | $security_status | ${test_reason:-N/A} | [View logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) |\n"
+          summary+="| Documentation | $docs_status | ${docs_reason:-N/A} | [View logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) |\n"
+          
+          # Save to output and file
+          echo "summary<<EOF" >> $GITHUB_OUTPUT
+          echo "$summary" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          
+          if [[ "${{ contains(needs.*.result, 'failure') }}" == "true" ]]; then
+            exit 1
+          fi
+
+      # Post results to the PR
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { issue: { number: issue_number }, repo: { owner, repo } } = context;
+            github.rest.issues.createComment({
+              issue_number,
+              owner,
+              repo,
+              body: `${{ steps.validation-summary.outputs.summary }}`
+            });

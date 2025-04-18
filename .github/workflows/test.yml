@@ -1,0 +1,72 @@
+name: Tests
+
+on:
+  # Keep direct pushes to main branches
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'pyproject.toml'
+      - 'tox.ini'
+  # Remove pull_request trigger - validate-changes.yml handles this now
+  # Allow this workflow to be called by other workflows (validate-changes.yml)
+  workflow_call:
+  # Keep workflow_dispatch for manual runs
+  workflow_dispatch:
+    inputs:
+      run_all_tests:
+        description: 'Run all tests regardless of changed files'
+        required: false
+        default: false
+        type: boolean
+
+# This job sets up Python versions from pyproject.toml classifiers
+jobs:
+  get-python-versions:
+    runs-on: ubuntu-latest
+    outputs:
+      python-versions: ${{ steps.get-versions.outputs.python-versions }}
+    steps:
+      - uses: actions/checkout@v3
+      - id: get-versions
+        run: |
+          python_versions=$(grep -E "Programming Language :: Python :: 3\.[0-9]+" pyproject.toml | grep -oE "3\.[0-9]+" | sort | uniq)
+          # Convert to JSON array format
+          python_versions_json=$(printf '%s\n' "${python_versions[@]}" | jq -R . | jq -s .)
+          echo "python-versions=${python_versions_json}" >> $GITHUB_OUTPUT
+          echo "Found Python versions: ${python_versions_json}"
+  
+  test:
+    needs: get-python-versions
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ${{ fromJSON(needs.get-python-versions.outputs.python-versions) }}
+      fail-fast: false
+
+    steps:
+    - uses: actions/checkout@v3
+      
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install tox tox-gh-actions
+        
+    - name: Test with tox
+      run: tox
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        
+    - name: Upload coverage report
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        fail_ci_if_error: false
