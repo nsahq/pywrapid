@@ -52,13 +52,13 @@ Test suite:
 
 
 CI/CD Pipeline
-=============
+==============
 
 The project uses a streamlined CI/CD pipeline based on GitHub Actions to ensure code quality
 and simplify the release process.
 
 Validation Workflow
-------------------
+-------------------
 
 We use a centralized validation workflow that intelligently orchestrates various checks:
 
@@ -80,13 +80,13 @@ The validation workflow runs automatically on:
 You can also manually trigger validation checks through GitHub Actions.
 
 Release and Publishing Process
-=============================
+==============================
 
 Pywrapid uses GitHub-integrated release process that leverages GitHub Actions along with
 automatic release notes generation.
 
 Version Management
------------------
+------------------
 
 The project uses ``setuptools_scm`` for version management, which means:
 
@@ -95,7 +95,7 @@ The project uses ``setuptools_scm`` for version management, which means:
 3. Git tags determine the package version
 
 Creating a New Release
---------------------
+----------------------
 
 To create a new release:
 
@@ -115,7 +115,7 @@ The publish workflow will automatically:
 - Attach build artifacts to the GitHub release
 
 Automatic Release Notes
----------------------
+-----------------------
 
 Release notes are automatically generated based on merged pull requests since the last release.
 To ensure your changes are properly categorized:
@@ -131,7 +131,7 @@ To ensure your changes are properly categorized:
 2. **Use descriptive PR titles**: These become part of the release notes
 
 Testing the Release Process
-------------------------
+---------------------------
 
 You can test different parts of the release process without actually publishing:
 

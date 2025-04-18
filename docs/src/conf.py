@@ -29,8 +29,17 @@ project = "pywrapid"
 copyright = f"2022-{datetime.now().year}, NSAHQ"  # pylint: disable=redefined-builtin
 author = "Jonas Werme"
 
-version = "0.3.0"
-release = "0.3.0"
+# Use setuptools_scm to get version from git
+try:
+    from setuptools_scm import get_version
+
+    version = get_version(root="../..", relative_to=__file__)
+    release = version
+except (ImportError, LookupError):
+    # If setuptools_scm is not installed or version cannot be determined
+    # (e.g., when the docs are being built on Read the Docs)
+    version = "0.3.0"
+    release = "0.3.0"
 
 # -- General configuration ---------------------------------------------------
 

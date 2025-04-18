@@ -80,29 +80,13 @@ Client Exceptions
    :show-inheritance:
    :members:
 
-.. autoexception:: pywrapid.webclient.ClientURLError
-   :show-inheritance:
-   :members:
-
 Credential Exceptions
 ---------------------
-
-.. autoexception:: pywrapid.webclient.CredentialException
-   :show-inheritance:
-   :members:
 
 .. autoexception:: pywrapid.webclient.CredentialError
    :show-inheritance:
    :members:
 
 .. autoexception:: pywrapid.webclient.CredentialCertificateFileError
-   :show-inheritance:
-   :members:
-
-.. autoexception:: pywrapid.webclient.CredentialKeyFileError
-   :show-inheritance:
-   :members:
-
-.. autoexception:: pywrapid.webclient.CredentialURLError
    :show-inheritance:
    :members:

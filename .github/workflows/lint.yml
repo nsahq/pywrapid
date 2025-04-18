@@ -51,21 +51,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          # Install linters and project dependencies
-          pip install flake8 pylint mypy black isort
-          pip install -e .[all] # Install project with all extras
+          pip install tox
 
-      - name: Run flake8
-        run: flake8 src tests
-
-      - name: Run pylint
-        run: pylint src tests
-
-      - name: Run mypy
-        run: mypy src
-
-      - name: Check formatting with black
-        run: black --check src tests
-
-      - name: Check import sorting
-        run: isort --check-only --profile black src tests
+      - name: Run QA checks (Linters and Tests via Tox)
+        run: tox -e qa
