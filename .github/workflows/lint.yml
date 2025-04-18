@@ -14,36 +14,58 @@ on:
   workflow_dispatch:
 
 jobs:
-  lint:
+  # Job to get Python versions for the matrix
+  get-python-versions:
     runs-on: ubuntu-latest
+    outputs:
+      python-versions: ${{ steps.get-versions.outputs.python-versions }}
     steps:
       - uses: actions/checkout@v3
-      
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - id: get-versions
+        run: |
+          python_versions_list=$(grep -E "Programming Language :: Python :: 3\.[0-9]+" pyproject.toml | grep -oE "3\.[0-9]+" | sort -V | uniq)
+          mapfile -t python_versions_array <<< "$python_versions_list"
+          python_versions_json=$(jq -n --compact-output --args '$ARGS.positional' -- "${python_versions_array[@]}")
+          echo "python-versions=${python_versions_json}" >> $GITHUB_OUTPUT
+          echo "Linting against Python versions: ${python_versions_json}"
+
+  lint:
+    needs: get-python-versions # Depend on the job that gets versions
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # Create a matrix based on the versions from pyproject.toml
+        python-version: ${{ fromJSON(needs.get-python-versions.outputs.python-versions) }}
+      fail-fast: false # Allow all matrix jobs to finish
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
         with:
-          # Use the minimum supported Python version for linting
-          # This ensures code is compatible with all supported versions
-          python-version: '3.7'
+          # Use the Python version from the matrix
+          python-version: ${{ matrix.python-version }}
           cache: 'pip'
-          
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
+          # Install linters and project dependencies
           pip install flake8 pylint mypy black isort
-          pip install -e .[all]
+          pip install -e .[all] # Install project with all extras
 
       - name: Run flake8
         run: flake8 src tests
-      
+
       - name: Run pylint
         run: pylint src tests
-      
+
       - name: Run mypy
         run: mypy src
-      
+
       - name: Check formatting with black
         run: black --check src tests
-      
+
       - name: Check import sorting
         run: isort --check-only --profile black src tests

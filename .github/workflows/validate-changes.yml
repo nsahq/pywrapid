@@ -88,51 +88,86 @@ jobs:
         id: validation-summary
         run: |
           summary=""
-          
+          overall_status="success" # Assume success unless a failure is found
+
+          # Determine overall status
           if [[ "${{ contains(needs.*.result, 'failure') }}" == "true" ]]; then
             summary="### ❌ Validation Failed\n\nSome checks did not pass. Please review the workflow logs for details:\n\n"
+            overall_status="failure"
+          elif [[ "${{ contains(needs.*.result, 'cancelled') }}" == "true" ]]; then
+             summary="### ⚠️ Validation Cancelled\n\nSome checks were cancelled.\n\n"
+             overall_status="cancelled" # Consider cancelled as not fully passed
           else
             summary="### ✅ All Validations Passed\n\nGreat job! All required checks passed.\n\n"
           fi
-          
-          # Add details about each check
-          [[ "${{ needs.test.result }}" == "success" ]] && test_status="✅ Passed" || test_status="❌ Failed"
-          [[ "${{ needs.lint.result }}" == "success" ]] && lint_status="✅ Passed" || lint_status="❌ Failed"
-          [[ "${{ needs.security.result }}" == "success" ]] && security_status="✅ Passed" || security_status="❌ Failed"
-          [[ "${{ needs.docs.result }}" == "success" ]] && docs_status="✅ Passed" || docs_status="❌ Failed"
-          
-          # Create reason explanations for why checks were run
+
+          # Function to get status emoji and text
+          get_status() {
+            case "$1" in
+              success) echo "✅ Passed" ;;
+              failure) echo "❌ Failed" ;;
+              skipped) echo "⚪ Skipped" ;;
+              cancelled) echo "⚠️ Cancelled" ;;
+              *) echo "❓ Unknown ($1)" ;;
+            esac
+          }
+
+          # Get individual job statuses
+          test_status=$(get_status "${{ needs.test.result }}")
+          lint_status=$(get_status "${{ needs.lint.result }}")
+          security_status=$(get_status "${{ needs.security.result }}")
+          docs_status=$(get_status "${{ needs.docs.result }}")
+
+          # Create reason explanations for why checks were run or skipped
           test_reason=""
-          if [[ "${{ needs.changes.outputs.src_changes }}" == "true" ]]; then
-            test_reason="Source code changes"
-          elif [[ "${{ needs.changes.outputs.test_changes }}" == "true" ]]; then
-            test_reason="Test code changes"
-          elif [[ "${{ needs.changes.outputs.config_changes }}" == "true" ]]; then
-            test_reason="Configuration changes"
+          if [[ "${{ needs.test.result }}" != "skipped" ]]; then
+            if [[ "${{ needs.changes.outputs.src_changes }}" == "true" ]]; then test_reason="Source code changes";
+            elif [[ "${{ needs.changes.outputs.test_changes }}" == "true" ]]; then test_reason="Test code changes";
+            elif [[ "${{ needs.changes.outputs.config_changes }}" == "true" ]]; then test_reason="Configuration changes"; fi
+          else
+             test_reason="No relevant changes"
           fi
-          
+
+          lint_reason=""
+          if [[ "${{ needs.lint.result }}" != "skipped" ]]; then
+             if [[ "${{ needs.changes.outputs.src_changes }}" == "true" ]]; then lint_reason="Source code changes";
+             elif [[ "${{ needs.changes.outputs.test_changes }}" == "true" ]]; then lint_reason="Test code changes"; fi
+          else
+             lint_reason="No relevant changes"
+          fi
+
+          security_reason=""
+          if [[ "${{ needs.security.result }}" != "skipped" ]]; then
+             if [[ "${{ needs.changes.outputs.src_changes }}" == "true" ]]; then security_reason="Source code changes";
+             elif [[ "${{ needs.changes.outputs.config_changes }}" == "true" ]]; then security_reason="Configuration changes"; fi
+          else
+             security_reason="No relevant changes"
+          fi
+
           docs_reason=""
-          if [[ "${{ needs.changes.outputs.docs_changes }}" == "true" ]]; then
-            docs_reason="Documentation file changes"
-          elif [[ "${{ needs.changes.outputs.src_changes }}" == "true" ]]; then
-            docs_reason="Source code changes (docstrings)"
-          elif [[ "${{ needs.changes.outputs.example_changes }}" == "true" ]]; then
-            docs_reason="Example or configuration sample changes"
+          if [[ "${{ needs.docs.result }}" != "skipped" ]]; then
+            if [[ "${{ needs.changes.outputs.docs_changes }}" == "true" ]]; then docs_reason="Documentation file changes";
+            elif [[ "${{ needs.changes.outputs.src_changes }}" == "true" ]]; then docs_reason="Source code changes (docstrings)";
+            elif [[ "${{ needs.changes.outputs.example_changes }}" == "true" ]]; then docs_reason="Example or config sample changes"; fi
+          else
+             docs_reason="No relevant changes"
           fi
-          
+
+          # Build the summary table
           summary+="| Check | Status | Triggered By | Details |\n"
           summary+="| ----- | ------ | ------------ | ------- |\n"
-          summary+="| Tests | $test_status | $test_reason | [View logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) |\n"
-          summary+="| Linting | $lint_status | ${test_reason:-N/A} | [View logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) |\n"
-          summary+="| Security | $security_status | ${test_reason:-N/A} | [View logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) |\n"
+          summary+="| Tests | $test_status | ${test_reason:-N/A} | [View logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) |\n"
+          summary+="| Linting | $lint_status | ${lint_reason:-N/A} | [View logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) |\n"
+          summary+="| Security | $security_status | ${security_reason:-N/A} | [View logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) |\n"
           summary+="| Documentation | $docs_status | ${docs_reason:-N/A} | [View logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) |\n"
-          
-          # Save to output and file
+
+          # Save to output
           echo "summary<<EOF" >> $GITHUB_OUTPUT
-          echo "$summary" >> $GITHUB_OUTPUT
+          echo -e "$summary" >> $GITHUB_OUTPUT # Use -e to interpret backslashes if any are added later
           echo "EOF" >> $GITHUB_OUTPUT
-          
-          if [[ "${{ contains(needs.*.result, 'failure') }}" == "true" ]]; then
+
+          # Exit with failure code only if there was an actual failure
+          if [[ "$overall_status" == "failure" ]]; then
             exit 1
           fi
 

@@ -62,7 +62,7 @@ jobs:
           field: 'tool.pywrapid.ci.default-python-version'
         
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ steps.get-ci-config.outputs.value || '3.12' }}
           cache: 'pip'
@@ -100,7 +100,7 @@ jobs:
         
       # Upload built distributions as artifacts
       - name: Upload distribution artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: python-package-distributions
           path: dist/
