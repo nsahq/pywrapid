@@ -26,17 +26,16 @@ jobs:
   get-python-versions:
     runs-on: ubuntu-latest
     outputs:
-      python-versions: ${{ steps.get-versions.outputs.python-versions }}
+      python-versions: ${{ steps.get-versions.outputs.value }} # Output the raw JSON string
     steps:
       - uses: actions/checkout@v3
-      - id: get-versions
-        run: |
-          python_versions_list=$(grep -E "Programming Language :: Python :: 3\.[0-9]+" pyproject.toml | grep -oE "3\.[0-9]+" | sort | uniq)
-          mapfile -t python_versions_array <<< "$python_versions_list"
-          # Build JSON array robustly using jq
-          python_versions_json=$(jq -n --compact-output --args '$ARGS.positional' -- "${python_versions_array[@]}")
-          echo "python-versions=${python_versions_json}" >> $GITHUB_OUTPUT
-          echo "Found Python versions: ${python_versions_json}"
+      - name: Get Python versions from pyproject.toml
+        id: get-versions
+        uses: SebRollen/toml-action@v1.2.0
+        with:
+          file: 'pyproject.toml'
+          field: 'tool.pywrapid.ci.python-versions' # Read the list
+          raw: true # Get the output as a raw JSON string suitable for fromJSON
   
   test:
     needs: get-python-versions
