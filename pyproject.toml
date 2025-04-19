@@ -150,6 +150,7 @@ testpaths = ["tests"]
 
 [tool.pylint.'MESSAGES CONTROL']
 max-line-length = 100
+max-args = 15 # Increased limit for positional arguments
 disable = """
     W0511,
     W3101
