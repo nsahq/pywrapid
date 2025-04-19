@@ -49,12 +49,6 @@ webclient = ["pywrapid[webclient-requests]"]
 webclient-async = ["pywrapid[webclient-aiohttp]"]
 webclient-all = ["pywrapid[webclient-requests,webclient-httpx,webclient-aiohttp]"]
 
-[tool.pywrapid.ci]
-python-versions = ["3.9", "3.10", "3.11", "3.12"]
-default-python-version = "3.12"
-operating-systems = ["ubuntu-latest", "windows-latest", "macos-latest"]
-default-os = "ubuntu-latest"
-
 # Complete package groups
 standard = ["pywrapid[config,webclient-requests,jwt]"]  # Backward compatible with original
 all = ["pywrapid[config,webclient-all,jwt]"]
@@ -80,7 +74,6 @@ docs = [
   "sphinx>=7.0.0",
   "sphinx_autodoc_typehints>=1.24.0",
   "sphinx_rtd_theme>=1.3.0",
-  "setuptools-scm>=6.2",
   "pyyaml>=5.1",
   "pyjwt",
 ]
@@ -88,6 +81,12 @@ dev = [
   "build>=1.0.0", 
   "twine>=4.0.0",
 ]
+
+[tool.pywrapid.ci]
+python-versions = ["3.9", "3.10", "3.11", "3.12"]
+default-python-version = "3.12"
+operating-systems = ["ubuntu-latest", "windows-latest", "macos-latest"]
+default-os = "ubuntu-latest"
 
 [project.urls]
 homepage = "https://github.com/nsahq"
