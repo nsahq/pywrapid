@@ -156,4 +156,4 @@ disable = """
 """
 
 [tool.pylint.design]
-max-args = 10
+max-args = 15
