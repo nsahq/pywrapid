@@ -68,6 +68,7 @@ qa = [
   "flake8>=6.0.0",
   "mypy>=1.0.0",
   "pylint>=2.17.0",
+  "bandit",
   "types-PyYAML",
   "types-requests",
 ]
