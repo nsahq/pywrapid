@@ -116,6 +116,7 @@ class TestWorkflowSyntax:
 
 class TestJobDependencies:
     """Tests for job dependencies in workflow files."""
+
     # pylint: disable=too-few-public-methods
 
     @pytest.mark.parametrize("workflow_file", _get_workflow_params())
@@ -146,6 +147,7 @@ class TestJobDependencies:
 
 class TestActionReferences:
     """Tests for GitHub Action references in workflow files."""
+
     # pylint: disable=too-few-public-methods
 
     @pytest.mark.parametrize("workflow_file", _get_workflow_params())
