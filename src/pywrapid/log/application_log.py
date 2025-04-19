@@ -72,7 +72,7 @@ def _generate_default(cfg: dict) -> dict:
 
 # flake8: noqa: C901
 def application_logging(  # pylint: disable=too-many-branches
-    config: Union[Type[WrapidConfig], dict]
+    config: Union[Type[WrapidConfig], dict],
 ) -> None:
     """Sets up loggers for application
 
