@@ -54,4 +54,4 @@ jobs:
           pip install tox
 
       - name: Run QA checks (Linters and Tests via Tox)
-        run: tox -e qa
+        run: tox -e lint # Changed from qa to lint

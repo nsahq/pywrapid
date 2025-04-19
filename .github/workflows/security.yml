@@ -29,22 +29,17 @@ jobs:
         python-version: ${{ steps.get-default-python.outputs.value }} # Use the value directly
         cache: 'pip'
         
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install bandit safety
-        pip install -e .
+    - name: Install Tox
+      run: python -m pip install --upgrade pip tox
         
-    - name: Run Bandit
-      run: bandit -r src/ -c pyproject.toml -f json -o bandit-results.json
-      continue-on-error: true
+    - name: Run Security Checks via Tox
+      run: tox -e security
+      continue-on-error: true # Keep this if you want the workflow to continue even if checks fail
       
-    - name: Run Safety
-      run: safety check --full-report -i 51457
-      continue-on-error: true
+    # Removed direct Bandit and Safety runs
       
     - name: Upload security scan results
       uses: actions/upload-artifact@v4
       with:
         name: security-scan-results
-        path: bandit-results.json
+        path: artifacts/security/bandit-results.json # Updated path
