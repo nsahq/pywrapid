@@ -165,7 +165,7 @@ disable = """
 max-args = 15
 
 [tool.flake8]
-max-line-length = 99
+max-line-length = 100
 ignore = ["E203", "W503"]
 max-complexity = 11
 select = ["B", "C", "E", "F", "W", "T4"]
