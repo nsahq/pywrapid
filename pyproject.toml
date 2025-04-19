@@ -152,8 +152,8 @@ testpaths = ["tests"]
 max-line-length = 100
 disable = """
     W0511,
-    W3101
+    W3101,
+    too-many-arguments
 """
-
 [tool.pylint.design]
 max-args = 15
