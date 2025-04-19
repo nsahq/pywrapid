@@ -43,7 +43,7 @@ def filesystem_fixture_0(tmp_path: str) -> str:
     path_2.write_text("sample text - Lorem ipsum dolor sit amet, consectetur adipiscing elit.")
 
     # Third level
-    path_3 = (  # Wrap path construction in parentheses
+    path_3 = (
         tmp_path / "test_dir_0" / "test_dir_0_0" / "test_dir_0_0_0" / "test_file_0_0_0_0"
     )  # type: ignore
     path_3.parent.mkdir()
@@ -51,9 +51,9 @@ def filesystem_fixture_0(tmp_path: str) -> str:
     path_3.write_text("sample text - Lorem ipsum dolor sit amet, consectetur adipiscing elit.")
 
     # Fourth level
-    path_4 = (  # Wrap path construction in parentheses
-        tmp_path / "test_dir_0" / "test_dir_0_0" / "test_dir_0_0_0" /
-        "test_dir_0_0_0_0" / "test_file_0_0_0_0_0"
+    path_4 = (
+        tmp_path / "test_dir_0" / "test_dir_0_0" / "test_dir_0_0_0"
+        / "test_dir_0_0_0_0" / "test_file_0_0_0_0_0"
     )
     path_4.parent.mkdir()
     path_4.touch()
