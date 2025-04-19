@@ -92,13 +92,13 @@ jobs:
 
           # Determine overall status
           if [[ "${{ contains(needs.*.result, 'failure') }}" == "true" ]]; then
-            summary="### ❌ Validation Failed\n\nSome checks did not pass. Please review the workflow logs for details:\n\n"
+            summary="### ❌ Validation Failed\\n\\nSome checks did not pass. Please review the workflow logs for details:\\n\\n"
             overall_status="failure"
           elif [[ "${{ contains(needs.*.result, 'cancelled') }}" == "true" ]]; then
-             summary="### ⚠️ Validation Cancelled\n\nSome checks were cancelled.\n\n"
+             summary="### ⚠️ Validation Cancelled\\n\\nSome checks were cancelled.\\n\\n"
              overall_status="cancelled" # Consider cancelled as not fully passed
           else
-            summary="### ✅ All Validations Passed\n\nGreat job! All required checks passed.\n\n"
+            summary="### ✅ All Validations Passed\\n\\nGreat job! All required checks passed.\\n\\n"
           fi
 
           # Function to get status emoji and text
@@ -154,34 +154,17 @@ jobs:
           fi
 
           # Build the summary table
-          summary+="| Check | Status | Triggered By | Details |\n"
-          summary+="| ----- | ------ | ------------ | ------- |\n"
-          summary+="| Tests | $test_status | ${test_reason:-N/A} | [View logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) |\n"
-          summary+="| Linting | $lint_status | ${lint_reason:-N/A} | [View logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) |\n"
-          summary+="| Security | $security_status | ${security_reason:-N/A} | [View logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) |\n"
-          summary+="| Documentation | $docs_status | ${docs_reason:-N/A} | [View logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) |\n"
+          summary+="| Check | Status | Triggered By |\n"
+          summary+="| ----- | ------ | ------------ |\n"
+          summary+="| Tests | $test_status | ${test_reason:-N/A} |\n"
+          summary+="| Linting | $lint_status | ${lint_reason:-N/A} |\n"
+          summary+="| Security | $security_status | ${security_reason:-N/A} |\n"
+          summary+="| Documentation | $docs_status | ${docs_reason:-N/A} |\n"
 
-          # Save to output
-          echo "summary<<EOF" >> $GITHUB_OUTPUT
-          echo -e "$summary" >> $GITHUB_OUTPUT # Use -e to interpret backslashes if any are added later
-          echo "EOF" >> $GITHUB_OUTPUT
+          # Append to the GitHub Step Summary
+          echo -e "$summary" >> $GITHUB_STEP_SUMMARY # Use -e to interpret backslashes
 
           # Exit with failure code only if there was an actual failure
           if [[ "$overall_status" == "failure" ]]; then
             exit 1
           fi
-
-      # Post results to the PR
-      - name: Comment on PR
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const { issue: { number: issue_number }, repo: { owner, repo } } = context;
-            github.rest.issues.createComment({
-              issue_number,
-              owner,
-              repo,
-              body: `${{ steps.validation-summary.outputs.summary }}`
-            });
