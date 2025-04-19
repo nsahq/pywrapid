@@ -69,6 +69,7 @@ qa = [
   "mypy>=1.0.0",
   "pylint>=2.17.0",
   "types-PyYAML",
+  "types-requests",
 ]
 docs = [
   "sphinx>=7.0.0",
