@@ -1,0 +1,170 @@
+name: Validate Changes
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  # This job determines what needs to be tested based on changed files
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+  
+    outputs:
+      src_changes: ${{ steps.filter.outputs.src_changes }}
+      test_changes: ${{ steps.filter.outputs.test_changes }}
+      docs_changes: ${{ steps.filter.outputs.docs_changes }}
+      example_changes: ${{ steps.filter.outputs.example_changes }}
+      config_changes: ${{ steps.filter.outputs.config_changes }}
+      infra_changes: ${{ steps.filter.outputs.infra_changes }}
+    steps:
+      - uses: actions/checkout@v3      
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            src_changes:
+              - 'src/**/*.py'
+            test_changes:
+              - 'tests/**/*.py'
+            docs_changes:
+              - 'docs/**/*'
+              - '**/*.md'
+              - '**/*.rst'
+            example_changes:
+              - 'examples/**/*'
+              - '**/*.yml'
+              - '**/*.yaml'
+              - '**/*.json'
+              - '**/*.ini'
+            config_changes:
+              - 'pyproject.toml'
+              - 'tox.ini'
+              - 'requirements*.txt'
+            infra_changes:
+              - '.github/**/*'
+  # Orchestrate the existing workflows
+  test:
+    name: Tests
+    needs: changes
+    # Always run tests if source or test files change
+    if: ${{ needs.changes.outputs.src_changes == 'true' || needs.changes.outputs.test_changes == 'true' || needs.changes.outputs.config_changes == 'true' }}
+    uses: ./.github/workflows/test.yml
+
+  lint:
+    name: Linting
+    needs: changes
+    # Always run linting if any Python files change
+    if: ${{ needs.changes.outputs.src_changes == 'true' || needs.changes.outputs.test_changes == 'true' }}
+    uses: ./.github/workflows/lint.yml
+  security:
+    name: Security Checks
+    needs: changes
+    # Always run security checks if source code or dependencies change
+    if: ${{ needs.changes.outputs.src_changes == 'true' || needs.changes.outputs.config_changes == 'true' }}
+    uses: ./.github/workflows/security.yml
+    
+  docs:
+    name: Documentation
+    needs: changes
+    # Run docs check if documentation files, source code, examples, or config samples change
+    if: ${{ needs.changes.outputs.docs_changes == 'true' || needs.changes.outputs.src_changes == 'true' || needs.changes.outputs.example_changes == 'true' }}
+    uses: ./.github/workflows/docs.yml
+  
+  # This job runs after all checks are complete to report status and provide feedback on the PR
+  summary:
+    name: Validation Summary
+    runs-on: ubuntu-latest
+    needs: [changes, test, lint, security, docs]
+    if: always()
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v3
+      - name: Create validation summary
+        id: validation-summary
+        run: |
+          summary=""
+          overall_status="success" # Assume success unless a failure is found
+
+          # Determine overall status
+          if [[ "${{ contains(needs.*.result, 'failure') }}" == "true" ]]; then
+            summary="### ❌ Validation Failed\\n\\nSome checks did not pass. Please review the workflow logs for details:\\n\\n"
+            overall_status="failure"
+          elif [[ "${{ contains(needs.*.result, 'cancelled') }}" == "true" ]]; then
+             summary="### ⚠️ Validation Cancelled\\n\\nSome checks were cancelled.\\n\\n"
+             overall_status="cancelled" # Consider cancelled as not fully passed
+          else
+            summary="### ✅ All Validations Passed\\n\\nGreat job! All required checks passed.\\n\\n"
+          fi
+
+          # Function to get status emoji and text
+          get_status() {
+            case "$1" in
+              success) echo "✅ Passed" ;;
+              failure) echo "❌ Failed" ;;
+              skipped) echo "⚪ Skipped" ;;
+              cancelled) echo "⚠️ Cancelled" ;;
+              *) echo "❓ Unknown ($1)" ;;
+            esac
+          }
+
+          # Get individual job statuses
+          test_status=$(get_status "${{ needs.test.result }}")
+          lint_status=$(get_status "${{ needs.lint.result }}")
+          security_status=$(get_status "${{ needs.security.result }}")
+          docs_status=$(get_status "${{ needs.docs.result }}")
+
+          # Create reason explanations for why checks were run or skipped
+          test_reason=""
+          if [[ "${{ needs.test.result }}" != "skipped" ]]; then
+            if [[ "${{ needs.changes.outputs.src_changes }}" == "true" ]]; then test_reason="Source code changes";
+            elif [[ "${{ needs.changes.outputs.test_changes }}" == "true" ]]; then test_reason="Test code changes";
+            elif [[ "${{ needs.changes.outputs.config_changes }}" == "true" ]]; then test_reason="Configuration changes"; fi
+          else
+             test_reason="No relevant changes"
+          fi
+
+          lint_reason=""
+          if [[ "${{ needs.lint.result }}" != "skipped" ]]; then
+             if [[ "${{ needs.changes.outputs.src_changes }}" == "true" ]]; then lint_reason="Source code changes";
+             elif [[ "${{ needs.changes.outputs.test_changes }}" == "true" ]]; then lint_reason="Test code changes"; fi
+          else
+             lint_reason="No relevant changes"
+          fi
+
+          security_reason=""
+          if [[ "${{ needs.security.result }}" != "skipped" ]]; then
+             if [[ "${{ needs.changes.outputs.src_changes }}" == "true" ]]; then security_reason="Source code changes";
+             elif [[ "${{ needs.changes.outputs.config_changes }}" == "true" ]]; then security_reason="Configuration changes"; fi
+          else
+             security_reason="No relevant changes"
+          fi
+
+          docs_reason=""
+          if [[ "${{ needs.docs.result }}" != "skipped" ]]; then
+            if [[ "${{ needs.changes.outputs.docs_changes }}" == "true" ]]; then docs_reason="Documentation file changes";
+            elif [[ "${{ needs.changes.outputs.src_changes }}" == "true" ]]; then docs_reason="Source code changes (docstrings)";
+            elif [[ "${{ needs.changes.outputs.example_changes }}" == "true" ]]; then docs_reason="Example or config sample changes"; fi
+          else
+             docs_reason="No relevant changes"
+          fi
+
+          # Build the summary table
+          summary+="| Check | Status | Triggered By |\n"
+          summary+="| ----- | ------ | ------------ |\n"
+          summary+="| Tests | $test_status | ${test_reason:-N/A} |\n"
+          summary+="| Linting | $lint_status | ${lint_reason:-N/A} |\n"
+          summary+="| Security | $security_status | ${security_reason:-N/A} |\n"
+          summary+="| Documentation | $docs_status | ${docs_reason:-N/A} |\n"
+
+          # Append to the GitHub Step Summary
+          echo -e "$summary" >> $GITHUB_STEP_SUMMARY # Use -e to interpret backslashes
+
+          # Exit with failure code only if there was an actual failure
+          if [[ "$overall_status" == "failure" ]]; then
+            exit 1
+          fi

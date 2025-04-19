@@ -43,14 +43,16 @@ def filesystem_fixture_0(tmp_path: str) -> str:
     path_2.write_text("sample text - Lorem ipsum dolor sit amet, consectetur adipiscing elit.")
 
     # Third level
-    path_3 = tmp_path / "test_dir_0" / "test_dir_0_0" / "test_dir_0_0_0" / "test_file_0_0_0_0"  # type: ignore
+    path_3 = (
+        tmp_path / "test_dir_0" / "test_dir_0_0" / "test_dir_0_0_0" / "test_file_0_0_0_0"
+    )  # type: ignore
     path_3.parent.mkdir()
     path_3.touch()
     path_3.write_text("sample text - Lorem ipsum dolor sit amet, consectetur adipiscing elit.")
 
     # Fourth level
     path_4 = (
-        tmp_path  # type: ignore
+        tmp_path
         / "test_dir_0"
         / "test_dir_0_0"
         / "test_dir_0_0_0"
@@ -61,12 +63,15 @@ def filesystem_fixture_0(tmp_path: str) -> str:
     path_4.touch()
     path_4.write_text("sample text - Lorem ipsum dolor sit amet, consectetur adipiscing elit.")
 
-    sym_dir = tmp_path / "test_dir_1" / "test_symlink_dir"  # type: ignore
-    sym_file = tmp_path / "test_dir_1" / "test_file_1_0" / "test_symlink_file"  # type: ignore
+    # Symlinks
+    sym_dir = tmp_path / "test_symlink_dir"
+    sym_file = tmp_path / "test_symlink_file"
     if not os.path.exists(sym_dir):
         os.symlink(tmp_path / "test_dir_1", tmp_path / "test_symlink_dir")  # type: ignore
     if not os.path.exists(sym_file):
-        os.symlink(tmp_path / "test_dir_1" / "test_file_1_0", tmp_path / "test_symlink_file")  # type: ignore
+        os.symlink(
+            tmp_path / "test_dir_1" / "test_file_1_0", tmp_path / "test_symlink_file"
+        )  # type: ignore
 
     return tmp_path
 
@@ -208,14 +213,19 @@ def test_find_directory_content_1(filesystem_fixture_0: str) -> None:
 
     # Find nothing
     files = module_0.find_directory_content(
-        filesystem_fixture_0 / "test_dir_0", depth=1, exclude_files=True, exclude_directories=True  # type: ignore
+        filesystem_fixture_0 / "test_dir_0",
+        depth=1,
+        exclude_files=True,
+        exclude_directories=True,  # type: ignore
     )
     assert len(files) == 0
 
 
 def test_find_directory_content_2(filesystem_fixture_0: str) -> None:
     """Test find_directory_content for files and directories"""
-    files = module_0.find_directory_content(filesystem_fixture_0 / "test_dir_0", depth=1)  # type: ignore
+    files = module_0.find_directory_content(
+        filesystem_fixture_0 / "test_dir_0", depth=1
+    )  # type: ignore
     assert len(files) == 2
     assert files[0]["name"] != files[1]["name"]
     for file in files:

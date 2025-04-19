@@ -1,0 +1,32 @@
+# .readthedocs.yaml
+# See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
+
+version: 2
+
+# Set the version of Python and other tools you might need
+build:
+  os: ubuntu-22.04
+  tools:
+    python: "latest" # Use latest stable CPython
+  jobs:
+    # Fetch git history for setuptools-scm to determine version
+    post_checkout:
+      - git fetch --unshallow || git fetch --depth=20000
+      - git fetch --tags
+
+# Build documentation in the docs/ directory with Sphinx
+sphinx:
+  configuration: docs/src/conf.py
+
+# Optionally build your docs in additional formats such as PDF and ePub
+# formats:
+#   - pdf
+#   - epub
+
+# Declare the Python requirements required to build your docs
+python:
+  install:
+    - method: pip
+      path: .
+      extra_requirements:
+        - docs

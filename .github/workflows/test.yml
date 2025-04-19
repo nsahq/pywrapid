@@ -1,0 +1,72 @@
+name: Tests
+
+on:
+  # Keep direct pushes to main branches
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'pyproject.toml'
+      - 'tox.ini'
+  # Remove pull_request trigger - validate-changes.yml handles this now
+  # Allow this workflow to be called by other workflows (validate-changes.yml)
+  workflow_call:
+  # Keep workflow_dispatch for manual runs
+  workflow_dispatch:
+    inputs:
+      run_all_tests:
+        description: 'Run all tests regardless of changed files'
+        required: false
+        default: false
+        type: boolean
+
+# This job sets up Python versions from pyproject.toml classifiers
+jobs:
+  get-python-versions:
+    runs-on: ubuntu-latest
+    outputs:
+      python-versions: ${{ steps.get-versions.outputs.value }} # Output the raw JSON string
+    steps:
+      - uses: actions/checkout@v3
+      - name: Get Python versions from pyproject.toml
+        id: get-versions
+        uses: SebRollen/toml-action@v1.2.0
+        with:
+          file: 'pyproject.toml'
+          field: 'tool.pywrapid.ci.python-versions' # Read the list
+          raw: true # Get the output as a raw JSON string suitable for fromJSON
+  
+  test:
+    needs: get-python-versions
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ${{ fromJSON(needs.get-python-versions.outputs.python-versions) }}
+      fail-fast: false
+
+    steps:
+    - uses: actions/checkout@v3
+      
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install tox tox-gh-actions
+        
+    - name: Test with tox
+      run: tox
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+        
+    - name: Upload coverage report
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        fail_ci_if_error: false

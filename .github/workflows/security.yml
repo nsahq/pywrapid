@@ -1,0 +1,45 @@
+name: Security Scanning
+
+on:
+  push:
+    branches: [ main, develop ]
+  # Remove pull_request trigger - validate-changes.yml handles this now
+  schedule:
+    - cron: '0 4 * * 1'  # Weekly on Monday at 4:00 UTC
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Get Default Python Version
+      id: get-default-python
+      uses: SebRollen/toml-action@v1.2.0
+      with:
+        file: 'pyproject.toml'
+        field: 'tool.pywrapid.ci.default-python-version' # Read the default version string
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ steps.get-default-python.outputs.value }} # Use the value directly
+        cache: 'pip'
+        
+    - name: Install Tox
+      run: python -m pip install --upgrade pip tox
+        
+    - name: Run Security Checks via Tox
+      run: tox -e security
+      continue-on-error: true # Keep this if you want the workflow to continue even if checks fail
+      
+    # Removed direct Bandit and Safety runs
+      
+    - name: Upload security scan results
+      uses: actions/upload-artifact@v4
+      with:
+        name: security-scan-results
+        path: artifacts/security/bandit-results.json # Updated path

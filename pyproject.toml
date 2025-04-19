@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "pywrapid"
 description = "Collection of wrapper libraries for rapid development of python applications"
 readme = "README.rst"
-requires-python = ">=3.6"
+requires-python = ">=3.7"
 license = { file = "LICENSE" }
 keywords = ["web client", "requests", "config", "yaml config", "wrapper"]
 authors = [
@@ -20,7 +20,6 @@ maintainers = [
 classifiers = [
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.6",
   "Programming Language :: Python :: 3.7",
   "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
@@ -34,27 +33,66 @@ classifiers = [
   "Operating System :: OS Independent",
 ]
 dynamic = ["version"]
-dependencies = ["requests", "pyyaml", "pyjwt"]
+# Core dependencies
+dependencies = []
 
 [project.optional-dependencies]
+yaml = ["pyyaml>=5.1"]
+requests = ["requests>=2.25.0"]
+httpx = ["httpx>=0.18.0"]
+aiohttp = ["aiohttp>=3.7.0"]
+jwt = ["pyjwt"]
+
+# Convenience groups
+webclient = ["pywrapid[requests]"]
+webclient-async = ["pywrapid[webclient-aiohttp]"]
+
+# Complete package groups
+standard = ["pywrapid[yaml,webclient,jwt]"]  # Backward compatible with original
+all = ["pywrapid[yaml,webclient,jwt]"]
+qa = ["pywrapid[tests, lint, security]"]
+dev = ["pywrapid[all, tests, qa, docs, build]"]
+
+# Development dependencies
 tests = [
-  "pytest[all]",
-  "pytest-cov[all]",
-  "tox[all]",
-  "responses[all]",
-  "coverage[all]",
-  "black[all]",
-  "isort[all]",
-  "flake8[all]",
-  "mypy[all]",
-  "pylint[all]",
+  "pytest>=7.0.0",
+  "pytest-cov>=4.0.0",
+  "tox>=4.2.0",
+  "responses>=0.21.0",
+  "pytest-asyncio>=0.21.0",  # For testing async webclient
+  "coverage>=7.0.0",
+]
+lint = [
+  "black>=23.0.0",
+  "isort>=5.12.0", 
+  "flake8>=6.0.0",
+  "flake8-pyproject", # Added plugin
+  "mypy>=1.0.0",
+  "pylint>=2.17.0",
+  "types-PyYAML",
+  "types-requests",
+]
+security = [
+  "bandit",
+  "safety",
 ]
 docs = [
-  "sphinx[all]",
-  "sphinx_autodoc_typehints[all]",
-  "sphinxcontrib-confluencebuilder[all]",
-  "sphinx_rtd_theme[all]",
+  "sphinx>=7.0.0",
+  "sphinx_autodoc_typehints>=1.24.0",
+  "sphinx_rtd_theme>=1.3.0",
+  "pyyaml>=5.1",
+  "pyjwt",
 ]
+build = [
+  "build>=1.0.0", 
+  "twine>=4.0.0",
+]
+
+[tool.pywrapid.ci]
+python-versions = ["3.9", "3.10", "3.11", "3.12"]
+default-python-version = "3.12"
+operating-systems = ["ubuntu-latest", "windows-latest", "macos-latest"]
+default-os = "ubuntu-latest"
 
 [project.urls]
 homepage = "https://github.com/nsahq"
@@ -120,5 +158,28 @@ testpaths = ["tests"]
 max-line-length = 100
 disable = """
     W0511,
-    W3101
+    W3101,
+    R0917
 """
+[tool.pylint.design]
+max-args = 15
+
+[tool.flake8]
+max-line-length = 100
+ignore = ["E203", "W503"]
+max-complexity = 11
+select = ["B", "C", "E", "F", "W", "T4"]
+exclude = [
+    ".git",
+    "__pycache__",
+    "docs/src/conf.py",
+    "old",
+    "build",
+    "dist",
+    "venv",
+]
+# Define ignores per file pattern
+per-file-ignores = [
+    "src/pywrapid/webclient/*: C901",
+    "tests/*: F841"
+]
