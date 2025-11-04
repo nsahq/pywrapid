@@ -4,6 +4,13 @@ on:
   pull_request:
     branches: [ main, develop ]
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      all:
+        description: 'Run all validation checks regardless of changes'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   # This job determines what needs to be tested based on changed files
@@ -50,28 +57,28 @@ jobs:
   test:
     name: Tests
     needs: changes
-    # Always run tests if source or test files change
-    if: ${{ needs.changes.outputs.src_changes == 'true' || needs.changes.outputs.test_changes == 'true' || needs.changes.outputs.config_changes == 'true' }}
+    # Always run tests if source or test files change, or if 'all' input is true
+    if: ${{ inputs.all || needs.changes.outputs.src_changes == 'true' || needs.changes.outputs.test_changes == 'true' || needs.changes.outputs.config_changes == 'true' }}
     uses: ./.github/workflows/test.yml
 
   lint:
     name: Linting
     needs: changes
-    # Always run linting if any Python files change
-    if: ${{ needs.changes.outputs.src_changes == 'true' || needs.changes.outputs.test_changes == 'true' }}
+    # Always run linting if any Python files change, or if 'all' input is true
+    if: ${{ inputs.all || needs.changes.outputs.src_changes == 'true' || needs.changes.outputs.test_changes == 'true' }}
     uses: ./.github/workflows/lint.yml
   security:
     name: Security Checks
     needs: changes
-    # Always run security checks if source code or dependencies change
-    if: ${{ needs.changes.outputs.src_changes == 'true' || needs.changes.outputs.config_changes == 'true' }}
+    # Always run security checks if source code or dependencies change, or if 'all' input is true
+    if: ${{ inputs.all || needs.changes.outputs.src_changes == 'true' || needs.changes.outputs.config_changes == 'true' }}
     uses: ./.github/workflows/security.yml
     
   docs:
     name: Documentation
     needs: changes
-    # Run docs check if documentation files, source code, examples, or config samples change
-    if: ${{ needs.changes.outputs.docs_changes == 'true' || needs.changes.outputs.src_changes == 'true' || needs.changes.outputs.example_changes == 'true' }}
+    # Run docs check if documentation files, source code, examples, or config samples change, or if 'all' input is true
+    if: ${{ inputs.all || needs.changes.outputs.docs_changes == 'true' || needs.changes.outputs.src_changes == 'true' || needs.changes.outputs.example_changes == 'true' }}
     uses: ./.github/workflows/docs.yml
   
   # This job runs after all checks are complete to report status and provide feedback on the PR
