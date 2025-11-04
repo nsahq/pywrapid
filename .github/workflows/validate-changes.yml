@@ -86,7 +86,8 @@ jobs:
     name: Validation Summary
     runs-on: ubuntu-latest
     needs: [changes, test, lint, security, docs]
-    if: always()
+    # Only run summary on pull requests (not when called from other workflows like publish)
+    if: always() && github.event_name == 'pull_request'
     permissions:
       pull-requests: write
     steps:
