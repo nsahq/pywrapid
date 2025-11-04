@@ -270,9 +270,8 @@ class OAuth2Credentials(WebCredentials):
                     username=self.legacy_auth.get("username", ""),
                     password=self.legacy_auth.get("password", ""),
                 )
-                self._options = self.legacy_auth._options  # type: ignore
-            else:
-                self._options = self._config["legacy_auth"]._options
+
+            self._options = self.legacy_auth._options  # type: ignore
 
         self.credential_body = self._config.pop("auth_data")
 
@@ -346,6 +345,13 @@ class WebClient:  # pylint: disable=too-many-instance-attributes, too-many-argum
                 self._credential_body: dict = credentials.credential_body
             else:
                 self._credential_body = {}
+        else:
+            # Initialize empty credential attributes when no credentials provided
+            self._credential_options = {}
+            self._login_url = ""
+            self._credential_config = {}
+            self._credential_body = {}
+            
         self._access_token_expiry = datetime.now()
         self._refresh_token_expiry = datetime.now()
         self._access_token = ""  # nosec
@@ -406,15 +412,18 @@ class WebClient:  # pylint: disable=too-many-instance-attributes, too-many-argum
         Raises:
             ClientAuthenticationError
         """
+        # Merge credential options (like auth) with any provided options
+        login_options = {**self._credential_options, **self._config.get("auth_options", {}), **options}
+        
         if self._credential_body:
-            options["data"] = self._credential_body
+            login_options["data"] = self._credential_body
 
         response = self.call(
             method,
             str(self._login_url),
             raise_for_status=False,
             skip_authentication=True,
-            **options,
+            **login_options,
         )
 
         if response.status_code > 299 or response.status_code < 200:
