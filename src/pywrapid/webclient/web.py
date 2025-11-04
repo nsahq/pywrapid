@@ -266,7 +266,7 @@ class OAuth2Credentials(WebCredentials):
             bool(self.legacy_auth),
         )
 
-        if legacy_auth:
+        if self.legacy_auth:
             self._options = self._config["legacy_auth"]._options
 
         self.credential_body = self._config.pop("auth_data")
