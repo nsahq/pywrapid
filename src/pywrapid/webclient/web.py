@@ -270,9 +270,7 @@ class OAuth2Credentials(WebCredentials):
                     username=self.legacy_auth.get("username", ""),
                     password=self.legacy_auth.get("password", ""),
                 )
-                self._options = self.legacy_auth._options  # type: ignore
-            else:
-                self._options = self._config["legacy_auth"]._options
+            self._options = self.legacy_auth._options  # type: ignore
 
         self.credential_body = self._config.pop("auth_data")
 
@@ -325,7 +323,17 @@ class WebClient:  # pylint: disable=too-many-instance-attributes, too-many-argum
         Raises:
             ClientException
         """
-        self._config = {}
+        # Initialize all instance variables with proper type hints
+        self._config: dict = {}
+        self._authorization_type: AuthorizationType = authorization_type
+        self._credential_options: dict = {}
+        self._credential_config: dict = {}
+        self._login_url: str = ""
+        self._credential_body: dict = {}
+        self._access_token_expiry: datetime = datetime.now()
+        self._refresh_token_expiry: datetime = datetime.now()
+        self._access_token: str = ""  # nosec
+        self._refresh_token: str = ""  # nosec
 
         if wrapid_config and dict_config:
             raise ClientError(
@@ -336,20 +344,12 @@ class WebClient:  # pylint: disable=too-many-instance-attributes, too-many-argum
         elif dict_config:
             self._config = dict_config
 
-        self._authorization_type = authorization_type
-
         if credentials:
-            self._credential_options: dict = {**credentials.options}  # type: ignore[dict-item]
+            self._credential_options = {**credentials.options}  # type: ignore[dict-item]
             self._login_url = credentials.config.get("login_url", "")  # type: ignore[attr-defined]
-            self._credential_config = credentials.config
+            self._credential_config = credentials.config  # type: ignore[assignment]
             if isinstance(credentials, OAuth2Credentials):
-                self._credential_body: dict = credentials.credential_body
-            else:
-                self._credential_body = {}
-        self._access_token_expiry = datetime.now()
-        self._refresh_token_expiry = datetime.now()
-        self._access_token = ""  # nosec
-        self._refresh_token = ""  # nosec
+                self._credential_body = credentials.credential_body
 
         try:
             AuthorizationType(authorization_type).name
@@ -406,15 +406,22 @@ class WebClient:  # pylint: disable=too-many-instance-attributes, too-many-argum
         Raises:
             ClientAuthenticationError
         """
+        # Merge credential options (like auth) with any provided options
+        login_options = {
+            **self._credential_options,
+            **self._config.get("auth_options", {}),
+            **options,
+        }
+
         if self._credential_body:
-            options["data"] = self._credential_body
+            login_options["data"] = self._credential_body
 
         response = self.call(
             method,
             str(self._login_url),
             raise_for_status=False,
             skip_authentication=True,
-            **options,
+            **login_options,
         )
 
         if response.status_code > 299 or response.status_code < 200:
