@@ -42,11 +42,5 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: documentation
-        path: docs/build/html/
-        
-    - name: Deploy to GitHub Pages
-      if: github.ref == 'refs/heads/main'
-      uses: JamesIves/github-pages-deploy-action@v4
-      with:
-        folder: docs/build/html
-        branch: gh-pages
+        path: artifacts/docs/html/
+        if-no-files-found: error
