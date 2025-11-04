@@ -108,9 +108,7 @@ class WebCredentials:
         if config and isinstance(config, WrapidConfig):
             return config
 
-        raise CredentialError(
-            "Config pratameter must be of type dict or a WrapidConfig derivative"
-        )
+        raise CredentialError("Config parameter must be of type dict or a WrapidConfig derivative")
 
     # def import_dependencies(self, dependencies: list) -> bool:
     #     """Import dependencies for credential type"""
@@ -229,7 +227,7 @@ class OAuth2Credentials(WebCredentials):
         token_url: str = "",
         redirect_uri: str = "",
         auth_data: Optional[dict] = None,
-        legacy_auth: Optional[BasicAuthCredentials] = None,
+        legacy_auth: Optional[Union[BasicAuthCredentials, dict]] = None,
         refresh_token_timeout: int = 0,
         access_token_timeout: int = 0,
         token_expiry_offset: int = 0,
@@ -267,7 +265,14 @@ class OAuth2Credentials(WebCredentials):
         )
 
         if self.legacy_auth:
-            self._options = self._config["legacy_auth"]._options
+            if isinstance(self.legacy_auth, dict):
+                self.legacy_auth = BasicAuthCredentials(
+                    username=self.legacy_auth.get("username", ""),
+                    password=self.legacy_auth.get("password", ""),
+                )
+                self._options = self.legacy_auth._options  # type: ignore
+            else:
+                self._options = self._config["legacy_auth"]._options
 
         self.credential_body = self._config.pop("auth_data")
 
